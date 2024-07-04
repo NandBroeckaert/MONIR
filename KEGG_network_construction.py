@@ -405,7 +405,7 @@ def network_builder(kgml_information_list,organism_code: str,selected_interactio
 
     return pathway_network_table
 
-def KEGG_network_costructor_from_list(KEGG_pathways_list: list,organism_code: str,KEGG_interaction_types:list,path_outputfile: str, reverse_interaction_doubler: bool):
+def KEGG_network_constructor_from_list(KEGG_pathways_list: list,organism_code: str,KEGG_interaction_types:list,path_outputfile: str, reverse_interaction_doubler: bool):
     """
     This method will create a table containing network information of the KEGG pathways described in KEGG pathways list.
         Note: this method assumes that the pathway list is totally correct (see method: KEGG_pathway_list_decoder).
@@ -526,13 +526,13 @@ def KEGG_network_costructor_from_list(KEGG_pathways_list: list,organism_code: st
     #writing pandas dataframe to tsv
     Total_network_table.to_csv(path_outputfile,sep='\t',index=False)
 
-def KEGG_network_costructor_from_string(KEGG_pathways_string: str,organism_code: str,selected_KEGG_interaction_types_string: str,output_directory: str, reverse_interaction_doubler = False):
+def KEGG_network_constructor_from_string(KEGG_pathways_string: str,organism_code: str,selected_KEGG_interaction_types_string: str,output_directory: str, reverse_interaction_doubler = False):
     """
     This method will create a table containing network information of the KEGG pathways described in KEGG pathways string.
     """
     selected_KEGG_interaction_types_list = KEGG_interacion_type_decoder(selected_KEGG_interaction_types_string)
     KEGG_pathways_list = KEGG_pathway_list_decoder(KEGG_pathways_string,organism_code)
-    KEGG_network_costructor_from_list(KEGG_pathways_list,organism_code,selected_KEGG_interaction_types_list,output_directory,reverse_interaction_doubler)
+    KEGG_network_constructor_from_list(KEGG_pathways_list,organism_code,selected_KEGG_interaction_types_list,output_directory,reverse_interaction_doubler)
 
 def network_merger(path_inputfile_network_1:str,path_inputfile_network_2:str,connect_identical_names:bool,output_directory_and_filename: str):
     """
@@ -694,4 +694,4 @@ def network_merger(path_inputfile_network_1:str,path_inputfile_network_2:str,con
 #testing -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 metabolic_pathways_pae = KEGG_organism_all_metabolic_pathway_retriever("pae")
 
-KEGG_network_costructor_from_string(metabolic_pathways_pae,"pae","reaction","C:/test/all_metabolic_reactions_pae_17052024.txt")
+KEGG_network_constructor_from_string(metabolic_pathways_pae,"pae","reaction","C:/test/all_metabolic_reactions_pae_02072024.txt")

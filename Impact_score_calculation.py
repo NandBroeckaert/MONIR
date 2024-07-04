@@ -23,7 +23,7 @@ class Node:
     Each element in the list consists of three elements: the id of the next/previous node and the interaction type and info with that node
     """
 
-    def __init__(self, id, type, previous_nodes, next_nodes, weight, level, changed, changed_omics_type):
+    def __init__(self, id, type, previous_nodes, next_nodes, weight, level, changed, changed_omics_type,inclusion_in_subnetwork):
         self.id = id
         self.type = type
         self.previous_nodes = previous_nodes
@@ -32,6 +32,7 @@ class Node:
         self.level = 0
         self.changed = False
         self.changed_omics_type = []
+        self.inclusion_in_subnetwork = False
 
 
 def unique_list_of_list_constructor(non_unique_list_of_lists: list) -> list:
@@ -56,8 +57,7 @@ def network_table_reader(path_inputfile_network: str, reverse_interaction_double
     """
     # validation input ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if (type(path_inputfile_network) != str) or (type(reverse_interaction_doubled) != bool):
-        raise Exception(
-            "Invalid input types detected. Your first input should be a string that describes the path to the network file. The second input is a boolean type.")
+        raise Exception("Invalid input types detected. Your first input should be a string that describes the path to the network file. The second input is a boolean type.")
     try:
         network_table = pd.read_csv(path_inputfile_network, sep="\t")
     except:
@@ -652,6 +652,16 @@ def node_level_resetter(network_node_objects_dict: dict):
                 "Wrong object type as key or value in dictionary. Please input a dictionary with {node_id:Node object}.")
         node.level = 0
 
+def node_inclusion_in_subnetwork_resetter(network_node_objects_dict: dict):
+    "sets all node levels back to zero"
+    if type(network_node_objects_dict) != dict:
+        raise Exception("The network should be contained in a dictionary: {node_id:node_object}.")
+
+    for node_id in network_node_objects_dict.keys():
+        node = network_node_objects_dict[node_id]
+        if type(node_id) != str or type(node) != Node:
+            raise Exception("Wrong object type as key or value in dictionary. Please input a dictionary with {node_id:Node object}.")
+        node.inclusion_in_subnetwork = False
 
 def node_changed_and_omics_type_resetter(network_node_objects_dict: dict):
     for node_id in network_node_objects_dict.keys():
@@ -1115,8 +1125,8 @@ def general_node_impact_assessor(
 
     # add columns to output table
     total_extended_impact_analysis_table = total_standard_impact_analysis_table
-    total_extended_impact_analysis_table.insert(loc=3,column="maximum_impact_score",value=maximum_total_impact_score_list)
-    total_extended_impact_analysis_table.insert(loc=4, column="topological_independent_impact_score",value=topological_independent_impact_score_list)
+    total_extended_impact_analysis_table.insert(loc=3,column="hypothetical_maximum_total_impact_score",value=maximum_total_impact_score_list)
+    total_extended_impact_analysis_table.insert(loc=4, column="topological_independent_total_impact_score",value=topological_independent_impact_score_list)
 
     # write to total impact table to tsv file
     total_extended_impact_analysis_table.to_csv(path_output_directory_and_filename, sep="\t", index=False)
