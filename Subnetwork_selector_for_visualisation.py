@@ -2,38 +2,22 @@ import pandas as pd
 from Impact_score_calculation import unique_list_of_list_constructor
 from Impact_score_calculation import network_table_reader
 from Impact_score_calculation import Node
-
+from Impact_score_calculation import node_level_resetter
+from Impact_score_calculation import node_inclusion_in_subnetwork_resetter
+from Impact_score_calculation import direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor
 
 def subnetwork_inclusion_initiator(input_node:Node,network_node_objects_dict: dict,directionality_reaction:str,directionality_other:str,distance_level_limit:int):
     input_node.inclusion_in_subnetwork = True
     if distance_level_limit > 0:
+        # selecting the requested neighbours
+        neighbouring_nodes = direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor(input_node,directionality_reaction,directionality_other)
         # initiating the inclusion_in_subnetwork parameter for neighbours connected via non-reaction type network interactions
-        if directionality_other == "bidirectional":
-            next_nodes = input_node.next_nodes
-            previous_nodes = input_node.previous_nodes
-            non_reaction_neighbouring_nodes = unique_list_of_list_constructor(next_nodes + previous_nodes)  # remove duplicates
-        else:  # if directionality_other == "unidirectional"
-            non_reaction_neighbouring_nodes = input_node.next_nodes
-
-        for element in non_reaction_neighbouring_nodes:
+        for element in neighbouring_nodes:
             neighbour_id = element[0]
             neighbour = network_node_objects_dict[neighbour_id]
             neighbour.inclusion_in_subnetwork = True #levels should be zero, so there is no need to reset them again
 
-        # initiating the inclusion_in_subnetwork parameter for neighbours connected via reaction type network interactions
-        if directionality_reaction == "bidirectional":
-            next_nodes = input_node.next_nodes
-            previous_nodes = input_node.previous_nodes
-            reaction_neighbouring_nodes = unique_list_of_list_constructor(next_nodes + previous_nodes)  # remove duplicates
-        else:  # if directionality_reaction == "unidirectional"
-            reaction_neighbouring_nodes = input_node.next_nodes
-
-        for element in reaction_neighbouring_nodes:
-            neighbour_id = element[0]
-            neighbour = network_node_objects_dict[neighbour_id]
-            neighbour.inclusion_in_subnetwork = True #levels should be zero, so there is no need to reset them again
-
-def subnetwork_level_and_inclusion_elongator(input_node:Node,previous_level_assigned_node: Node,network_node_objects_dict: dict,directionality_reaction:str,directionality_other:str,distance_level_limit:int):
+def subnetwork_inclusion_elongator(input_node:Node,previous_level_assigned_node: Node,network_node_objects_dict: dict,directionality_reaction:str,directionality_other:str,distance_level_limit:int):
     # validation inputs ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if type(input_node) != Node or type(previous_level_assigned_node) != Node:
         raise Exception("The first two inputs should be Node objects.")
@@ -55,29 +39,24 @@ def subnetwork_level_and_inclusion_elongator(input_node:Node,previous_level_assi
     # network extender  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if input_node.level < distance_level_limit:  # keep extending till level limit is reached
 
-        # extending through non-reaction type network interactions
-        if directionality_other == "bidirectional":
-            next_nodes = input_node.next_nodes
-            previous_nodes = input_node.previous_nodes
-            neighbouring_nodes = unique_list_of_list_constructor(next_nodes + previous_nodes)  # remove duplicates
-        else:  # if directionality_other == "unidirectional"
-            neighbouring_nodes = input_node.next_nodes
-
+        neighbouring_nodes = direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor(input_node,directionality_reaction,directionality_other)
         for element in neighbouring_nodes:
             neighbour_id = element[0]
             interaction_type_with_neighbour = element[1]
             neighbour = network_node_objects_dict[neighbour_id]
 
-            if neighbour_id == previous_level_assigned_node.id:  # pass over the node that this function was previously called on. Otherwise you could get stuck in a loop.
+            # pass over the node that this function was previously called on. Otherwise you could get stuck in a loop.
+            if neighbour_id == previous_level_assigned_node.id:
                 continue
 
+            # extending through non-reaction type network interactions
             if interaction_type_with_neighbour != "reaction":
                 if interaction_type_with_neighbour == "identical_id_connection":
                     # the same level should be assigned to a group of 'identical nodes' (meaning group of nodes that have different variants of the same id).
                     neighbour.level = input_node.level
                     neighbour.inclusion_in_subnetwork = True
                     # the next node will be the start point for assigning weights to the next layer of nodes
-                    subnetwork_level_and_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other,distance_level_limit)
+                    subnetwork_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other,distance_level_limit)
 
                 else:
                     potential_new_level = input_node.level + 1
@@ -88,24 +67,9 @@ def subnetwork_level_and_inclusion_elongator(input_node:Node,previous_level_assi
                     neighbour.inclusion_in_subnetwork = True
                     # if better level was found --> continue exploring network in that direction
                     # the next node will be the start point for assigning levels to the next layer of nodes
-                    subnetwork_level_and_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other, distance_level_limit)
+                    subnetwork_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other, distance_level_limit)
 
-        # extending through reaction type network interactions
-        if directionality_reaction == "bidirectional":
-            next_nodes = input_node.next_nodes
-            previous_nodes = input_node.previous_nodes
-            neighbouring_nodes = unique_list_of_list_constructor(next_nodes + previous_nodes)  # remove duplicates
-        else:  # if directionality_reaction == "unidirectional"
-            neighbouring_nodes = input_node.next_nodes
-
-        for element in neighbouring_nodes:
-            neighbour_id = element[0]
-            interaction_type_with_neighbour = element[1]
-            neighbour = network_node_objects_dict[neighbour_id]
-
-            if neighbour_id == previous_level_assigned_node.id:  # pass over the node that this function was previously called on. Otherwise you could get stuck in a loop.
-                continue
-
+            # extending through reaction type network interactions
             if interaction_type_with_neighbour == "reaction":  # interaction type == "reaction": These interaction types have to be handled differently, because you want to assign weights to the metabolites, not the genes.
                 if (input_node.type == "gene" or input_node.type == "group_gene") and neighbour.type == "compound":  # should only be passed for the first gene when you enter the reaction network from another type of network
                     # calculate new potential weight and the accompanying level
@@ -118,7 +82,7 @@ def subnetwork_level_and_inclusion_elongator(input_node:Node,previous_level_assi
                     neighbour.inclusion_in_subnetwork = True
                     # if better level was found --> continue exploring network in that direction
                     # the next node will be the start point for assigning weights to the next layer of nodes
-                    subnetwork_level_and_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other, distance_level_limit)
+                    subnetwork_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other, distance_level_limit)
 
                 elif input_node.type == "compound" and (neighbour.type == "gene" or neighbour.type == "group_gene"):
                     # calculate new potential weight and the accompanying level
@@ -131,7 +95,7 @@ def subnetwork_level_and_inclusion_elongator(input_node:Node,previous_level_assi
                     neighbour.inclusion_in_subnetwork = True
                     # if better level was found --> continue exploring network in that direction
                     # the next node will be the start point for assigning weights to the next layer of nodes
-                    subnetwork_level_and_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other, distance_level_limit)
+                    subnetwork_inclusion_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction, directionality_other, distance_level_limit)
 
 
                 elif input_node.type == "compound" and neighbour.type == "compound":
@@ -142,60 +106,80 @@ def subnetwork_level_and_inclusion_elongator(input_node:Node,previous_level_assi
                 else:  # gene & group_gene
                     raise Exception("Error: odd edge defined as reaction. Probably, group - group.")
 
-def subnetwork_minimal_node_list_constructor(network_node_objects_dict: dict) -> list:
-    minimal_node_list = []
+def subnetwork_node_list_constructor(network_node_objects_dict: dict) -> list:
+    node_id_list = []
     for node_id in network_node_objects_dict:
         node = network_node_objects_dict[node_id]
         if node.inclusion_in_subnetwork:
-            minimal_node_list.append(node_id)
-    return minimal_node_list
+            node_id_list.append(node_id)
+    return node_id_list
 
-def subnetwork_table_constructor_from_node_list(minimal_node_list: list,reverse_interaction_doubled:bool,path_inputfile_results_impact_analysis:str,impact_value_type:str,impact_threshold:float,max_step_distance:int,output_directory_and_filename:str):
+def single_subnetwork_table_constructor(full_network_pd:pd.DataFrame,node_id_list: list,incl_neighbours:bool)-> pd.DataFrame:
+    #CREATE SUBNETWORK TABLE
+    if incl_neighbours:
+        subnetwork_pd = full_network_pd[full_network_pd['source_id'].isin(node_id_list) or full_network_pd['target_id'].isin(node_id_list)]
+    else:
+        subnetwork_pd = full_network_pd[full_network_pd['source_id'].isin(node_id_list) and full_network_pd['target_id'].isin(node_id_list)]
+    return subnetwork_pd
 
 
-def subnetwork_table_constructor_from_network_file(path_inputfile_network_1:str,reverse_interaction_doubled:bool,path_inputfile_results_impact_analysis:str,impact_value_type:str,impact_threshold:float,max_step_distance:int,output_directory_and_filename: str):
+def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network:str,reverse_interaction_doubled:bool,directionality_reaction:str,directionality_other:str,results_impact_analysis_pd:pd.DataFrame,impact_value_type:str,impact_threshold:float,distance_level_limit:int,incl_neighbours:bool,output_directory_and_filename: str):
     """
-    method: build subnetwork of a provided
+    This method reads in a tsv file of the following format:
+    Column 0: "source_id"
+    Column 1: "source_type"
+    Column 2: "target_id"
+    Column 3: "target_type"
+    Column 4: "interaction_type"
+    Column 5: "interaction_id"
+    Column 6: "interaction_info"
     """
-    network_node_dict = network_table_reader(path_inputfile_network_1,reverse_interaction_doubled)
-    results_impact_analysis_pd = pd.read_csv(path_inputfile_results_impact_analysis,sep="\t")
+    network_pd = pd.read_csv(path_inputfile_network, sep="\t")
+    network_node_dict = network_table_reader(path_inputfile_network,reverse_interaction_doubled)
 
-    #INPUT VALIDATION ------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    topological_independent_total_impact_score
-    total_impact_score
-
-    #CREATING THE SUBNETWORKS -----------------------------------------------------------------------------------------------------------------------------------------------------------
     #create subnetwork for each node of interest that scored above the impact threshold
     rows = results_impact_analysis_pd.shape[0]
     for row in range(rows):
-        NOI_id = results_impact_analysis_pd.iloc[rows,0]
         NOI_network_id = results_impact_analysis_pd.iloc[rows,1]
         total_impact_score = results_impact_analysis_pd.iloc[rows,2]
         topological_independent_total_impact_score = results_impact_analysis_pd.iloc[rows,4]
 
         if ((impact_value_type == 'total_impact_score') and (total_impact_score>=impact_threshold)) or ((impact_value_type == 'topological_independent_total_impact_score') and (topological_independent_total_impact_score>=impact_threshold)):
+            NOI = network_node_dict[NOI_network_id]
 
+            #reset inclusion and level attributes of the node objects
+            node_level_resetter(network_node_dict)
+            node_inclusion_in_subnetwork_resetter(network_node_dict)
 
-            """
-        Node object:
-        self.id = id
-        self.type = type
-        self.previous_nodes = previous_nodes [id,type,info]
-        self.next_nodes = next_nodes [id,type,info]
-        self.weight = weight
-        self.level = 0
-        self.changed = False
-        self.changed_omics_type = []
-            
-        This method reads in a tsv file of the following format:
-        Column 0: "source_id"
-        Column 1: "source_type"
-        Column 2: "target_id"
-        Column 3: "target_type"
-        Column 4: "interaction_type"
-        Column 5: "interaction_id"
-        Column 6: "interaction_info"
-        """
+            #initiate the requested neighbouring nodes
+            subnetwork_inclusion_initiator(NOI,network_node_dict,directionality_reaction,directionality_other,distance_level_limit)
+
+            #determine requested neighbours of starting node
+            neighbouring_nodes = direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor(NOI,directionality_reaction,directionality_other)
+
+            #elongate inclusion attributes in the direction of the requested neighbours
+            for element in neighbouring_nodes:
+                start_node_id = element[0]
+                start_node = network_node_dict[start_node_id]
+                subnetwork_inclusion_elongator(start_node,NOI,network_node_dict,directionality_reaction,directionality_other,distance_level_limit)
+
+            #make list of nodes that should be included in the subnetwork
+            subnetwork_node_id_list = subnetwork_node_list_constructor(network_node_dict)
+
+            #make subnetwork pandas dataframe
+            subnetwork_pd = single_subnetwork_table_constructor(network_pd,subnetwork_node_id_list,incl_neighbours)
+
+            #write to output directory
+            subnetwork_pd.to_csv(output_directory_and_filename+NOI_network_id, sep="\t", index=False)
+
+def subnetwork_table_constructor(path_inputfile_network_1:str,reverse_interaction_doubled:bool,directionality_reaction:str,directionality_other:str,path_inputfile_results_impact_analysis:str,impact_value_type:str,impact_threshold:float,distance_level_limit:int,incl_neighbours:bool,output_directory_and_filename: str):
+    """
+    method: build subnetwork of a provided _from_network_file_and_impact_file
+    """
+    results_impact_analysis_pd = pd.read_csv(path_inputfile_results_impact_analysis,sep="\t")
+
+    #create subnetwork for each node of interest that scored above the impact threshold
+    subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network_1,reverse_interaction_doubled,directionality_reaction,directionality_other,results_impact_analysis_pd,impact_value_type,impact_threshold,distance_level_limit,incl_neighbours,output_directory_and_filename)
 
 def cytoscape_node_table_nodetype_extension_constructor(path_inputfile_network_1:str,output_directory_and_filename: str):
     """

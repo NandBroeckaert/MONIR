@@ -90,8 +90,7 @@ def network_table_reader(path_inputfile_network: str, reverse_interaction_double
     node_type_targets = network_table["target_type"].tolist()
     node_types = node_type_sources + node_type_targets
 
-    dict_node_id_to_type = dict(zip(node_ids,
-                                    node_types))  # keys is the unique list of nodes. The value (/type) for each key the last value in the node_types list for a particular key (/id)
+    dict_node_id_to_type = dict(zip(node_ids,node_types))  # keys is the unique list of nodes. The value (/type) for each key the last value in the node_types list for a particular key (/id)
 
     # Construct network (construct all node objects)
     network_node_objects_dict = {}
@@ -129,36 +128,25 @@ def network_table_reader(path_inputfile_network: str, reverse_interaction_double
         if node_id in node_id_targets:
 
             previous_nodes_id = network_table.loc[network_table["target_id"] == node_id, "source_id"].tolist()
-            previous_nodes_interaction_types = network_table.loc[
-                network_table["target_id"] == node_id, "interaction_type"].tolist()
-            previous_nodes_interaction_info = network_table.loc[
-                network_table["target_id"] == node_id, "interaction_info"].tolist()
+            previous_nodes_interaction_types = network_table.loc[network_table["target_id"] == node_id, "interaction_type"].tolist()
+            previous_nodes_interaction_info = network_table.loc[network_table["target_id"] == node_id, "interaction_info"].tolist()
 
             for i in range(len(previous_nodes_id)):
                 previous_nodes.append(
                     [previous_nodes_id[i], previous_nodes_interaction_types[i], previous_nodes_interaction_info[i]])
 
                 if previous_nodes_interaction_types[i] == "identical_id_connection":
-                    next_nodes.append(
-                        [previous_nodes_id[i], previous_nodes_interaction_types[i], previous_nodes_interaction_info[i]])
+                    next_nodes.append([previous_nodes_id[i], previous_nodes_interaction_types[i], previous_nodes_interaction_info[i]])
 
             # A node that is part of a reversible reaction be contained in the previous and next nodes lists of nodes that are part of this interaction.
             if reverse_interaction_doubled == False:
-                previous_nodes_id_reversible_KEGG_reactions = network_table.loc[
-                    (network_table["target_id"] == node_id) & (
-                                network_table["interaction_info"] == "reversible"), "source_id"].tolist()
-                previous_nodes_interaction_types_reversible_KEGG_reactions = network_table.loc[
-                    (network_table["target_id"] == node_id) & (
-                                network_table["interaction_info"] == "reversible"), "interaction_type"].tolist()
-                previous_nodes_interaction_info_reversible_KEGG_reactions = network_table.loc[
-                    (network_table["target_id"] == node_id) & (
-                                network_table["interaction_info"] == "reversible"), "interaction_info"].tolist()
+                previous_nodes_id_reversible_KEGG_reactions = network_table.loc[(network_table["target_id"] == node_id) & (network_table["interaction_info"] == "reversible"), "source_id"].tolist()
+                previous_nodes_interaction_types_reversible_KEGG_reactions = network_table.loc[(network_table["target_id"] == node_id) & (network_table["interaction_info"] == "reversible"), "interaction_type"].tolist()
+                previous_nodes_interaction_info_reversible_KEGG_reactions = network_table.loc[(network_table["target_id"] == node_id) & (network_table["interaction_info"] == "reversible"), "interaction_info"].tolist()
 
                 extension_next_nodes = []
                 for i in range(len(previous_nodes_id_reversible_KEGG_reactions)):
-                    extension_next_nodes.append([previous_nodes_id_reversible_KEGG_reactions[i],
-                                                 previous_nodes_interaction_types_reversible_KEGG_reactions[i],
-                                                 previous_nodes_interaction_info_reversible_KEGG_reactions[i]])
+                    extension_next_nodes.append([previous_nodes_id_reversible_KEGG_reactions[i],previous_nodes_interaction_types_reversible_KEGG_reactions[i],previous_nodes_interaction_info_reversible_KEGG_reactions[i]])
                 next_nodes += extension_next_nodes
 
         # Remove duplicates. A node's target previous and next nodes lists should be not contain duplicates. A node can only refer once to another node!
@@ -233,6 +221,18 @@ def id_dict_and_list_of_identical_node_groups_constructor(network_node_objects_d
 
     return list_identical_variant_ids, dict_identical_variant_groups
 
+
+def direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor(input_node:Node,directionality_reaction:str,directionality_other:str) -> list:
+    previous_nodes = input_node.previous_nodes
+    neighbouring_nodes = input_node.next_nodes  # next/downstream nodes are always included. only the previous/upstream nodes are optional.
+    for element in previous_nodes:
+        previous_node_interaction_type = element[1]
+        if (directionality_reaction == "bidirectional") and (previous_node_interaction_type == "reaction"):
+            neighbouring_nodes.append(element)
+        if (directionality_other == "bidirectional") and (previous_node_interaction_type != "reaction"):
+            neighbouring_nodes.append(element)
+    neighbouring_nodes = unique_list_of_list_constructor(neighbouring_nodes)
+    return neighbouring_nodes
 
 def id_list_of_neighbours_constructor(input_node: Node, network_node_objects_dict: dict, direction_of_neighbours: str,
                                       interaction_type: str) -> list:
@@ -502,22 +502,17 @@ def node_weight_distribution_elongator(
     # weight distribution --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if input_node.weight != 0 and input_node.level < distance_level_limit:  # check if we need to calculate weights of neighbouring nodes
 
-        # distribute weight through non-reaction type network interactions
-        if directionality_other == "bidirectional":
-            next_nodes = input_node.next_nodes
-            previous_nodes = input_node.previous_nodes
-            neighbouring_nodes = unique_list_of_list_constructor(next_nodes + previous_nodes)  # remove duplicates
-        else:  # if directionality_other == "unidirectional"
-            neighbouring_nodes = input_node.next_nodes
-
+        neighbouring_nodes = direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor(input_node,directionality_reaction,directionality_other)
         for element in neighbouring_nodes:
             neighbour_id = element[0]
             interaction_type_with_neighbour = element[1]
             neighbour = network_node_objects_dict[neighbour_id]
 
-            if neighbour_id == previous_weight_assigned_node.id:  # pass over the node that this function was previously called on. Otherwise you could get stuck in a loop.
+            # pass over the node that this function was previously called on. Otherwise you could get stuck in a loop.
+            if neighbour_id == previous_weight_assigned_node.id:
                 continue
 
+            # distribute weight through non-reaction type network interactions
             if interaction_type_with_neighbour != "reaction":
                 if interaction_type_with_neighbour == "identical_id_connection":
                     # the same weight and level should be assigned to a group of 'identical nodes' (meaning group of nodes that have different variants of the same id).
@@ -544,24 +539,7 @@ def node_weight_distribution_elongator(
                         # the next node will be the start point for assigning weights to the next layer of nodes
                         node_weight_distribution_elongator(neighbour, input_node, network_node_objects_dict,directionality_reaction,directionality_other,centrality_modification,missingness_modification,missingness_modification_step_penalty,distance_modification,distance_modification_step_penalty,distance_level_limit)
 
-
-
-        # distribute weights through reaction type network interactions
-        if directionality_reaction == "bidirectional":
-            next_nodes = input_node.next_nodes
-            previous_nodes = input_node.previous_nodes
-            neighbouring_nodes = unique_list_of_list_constructor(next_nodes + previous_nodes)  # remove duplicates
-        else:  # if directionality_reaction == "unidirectional"
-            neighbouring_nodes = input_node.next_nodes
-
-        for element in neighbouring_nodes:
-            neighbour_id = element[0]
-            interaction_type_with_neighbour = element[1]
-            neighbour = network_node_objects_dict[neighbour_id]
-
-            if neighbour_id == previous_weight_assigned_node.id:  # pass over the node that this function was previously called on. Otherwise you could get stuck in a loop.
-                continue
-
+            # distribute weights through reaction type network interactions
             if interaction_type_with_neighbour == "reaction":  # interaction type == "reaction": These interaction types have to be handled differently, because you want to assign weights to the metabolites, not the genes.
                 if (input_node.type == "gene" or input_node.type == "group_gene") and neighbour.type == "compound":  # should only be passed for the first gene when you enter the reaction network from another type of network
                     # calculate new potential weight and the accompanying level
@@ -1122,7 +1100,7 @@ def general_node_impact_assessor(
         else:
             topological_independent_impact_score_list.append('')
 
-
+    #WRITING OUTPUT OF IMPACT ANALYSIS
     # add columns to output table
     total_extended_impact_analysis_table = total_standard_impact_analysis_table
     total_extended_impact_analysis_table.insert(loc=3,column="hypothetical_maximum_total_impact_score",value=maximum_total_impact_score_list)
@@ -1130,6 +1108,8 @@ def general_node_impact_assessor(
 
     # write to total impact table to tsv file
     total_extended_impact_analysis_table.to_csv(path_output_directory_and_filename, sep="\t", index=False)
+
+    #GENERATE SUBNETWORKS FOR VISUALIZING RESULTS OF IMPACT ANALYSIS
 
 
 # analyzing acetylomics wih metabolomics  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
