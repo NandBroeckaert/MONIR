@@ -14,7 +14,7 @@ The output will be a network comprised of gene and cpd nodes.
 """
 
 import pandas as pd
-
+from Subnetwork_selector_for_visualisation import subnetwork_table_constructor_from_network_file_and_impact_dataframe
 
 class Node:
     """
@@ -233,6 +233,7 @@ def direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_construct
             neighbouring_nodes.append(element)
     neighbouring_nodes = unique_list_of_list_constructor(neighbouring_nodes)
     return neighbouring_nodes
+
 
 def id_list_of_neighbours_constructor(input_node: Node, network_node_objects_dict: dict, direction_of_neighbours: str,
                                       interaction_type: str) -> list:
@@ -1011,7 +1012,8 @@ def general_node_impact_assessor(
         distance_modification: bool,
         distance_modification_step_penalty: float,
         path_output_directory_and_filename: str,
-        distance_level_limit=int(100000000)):
+        distance_level_limit=int(100000000),
+        include_subnetwork_for_visualisation=True):
     """
         Output: a dataframe containing
         - total impact_score
@@ -1062,9 +1064,10 @@ def general_node_impact_assessor(
     # change the omics data to the omics background for the calculation of the maximal node impact values
     node_changed_and_omics_type_maximum_background_updater(network_node_objects_dict)
     # perform the impact analysis to calculate the maximum impact score for all nodes of interest
+
     total_maximum_impact_analysis_table = pd.DataFrame(
         columns=['NOI_id', 'NOI_network_id', 'total_impact_score', 'contributing_nodes',
-                 'contributing_nodes_sub_scores', 'top_impacting_node_type', 'node_types', 'node_types_sub_scores'])
+                 'contributing_nodes_sub_scores','contributing_nodes_max_level','contributing_nodes_level','top_impacting_node_type', 'node_types', 'node_types_sub_scores'])
     for node_id in nodes_of_interest_ids_list:
         maximum_node_impact_table = single_node_impact_assessor(
             node_id,
@@ -1110,6 +1113,8 @@ def general_node_impact_assessor(
     total_extended_impact_analysis_table.to_csv(path_output_directory_and_filename, sep="\t", index=False)
 
     #GENERATE SUBNETWORKS FOR VISUALIZING RESULTS OF IMPACT ANALYSIS
+    if include_subnetwork_for_visualisation:
+        subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,total_extended_impact_analysis_table,"total_impact_score",start_weight_value,distance_level_limit,True,True)
 
 
 # analyzing acetylomics wih metabolomics  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
