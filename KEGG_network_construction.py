@@ -7,7 +7,9 @@ import xml.etree.ElementTree as ET
 
 def KEGG_organism_pathway_retriever(KEGG_organism_code:str) -> list:
     """
-    This method retrieves all the KEGG pathways for a specific organism (KEGG organism code)
+    This method returns a list containing all the pathway identifiers of the specfied organism.
+    :param KEGG_organism_code: the code that KEGG uses for a specific organism (e.g. 'pae' for Pseudomonas aeruginosa PAO1)
+    :return: a list containing the pathway identifiers of the specified organism
     """
     KEGG_API_url_pathway_list = "https://rest.kegg.jp/list/pathway/{organism_code}".format(organism_code=KEGG_organism_code)
     response = requests.get(KEGG_API_url_pathway_list, timeout=5) #retrieve data from KEGG database
@@ -28,7 +30,13 @@ def KEGG_organism_pathway_retriever(KEGG_organism_code:str) -> list:
             "No data for this organism code could be retrieved. Please check whether the organism is in the KEGG database.")
     return response_info
 
+
 def KEGG_organism_all_metabolic_pathway_retriever(KEGG_organism_code:str) -> str:
+    """
+    This method returns a string containing all the metabolic pathway identifiers of the specified organism separated by the delimiter '$'.
+    :param KEGG_organism_code: the code that KEGG uses for a specific organism (e.g. 'pae' for Pseudomonas aeruginosa PAO1)
+    :return: a string containing all the metabolic pathway identifiers of the specified organism separated by the delimiter '$'
+    """
     #all hypothetically possible metabolic pathways
     Carbohydrate_metabolism_pathway_numbers = ['00010','00020','00030','00040','00051','00052','00053','00500','00520','00620','00630','00640','00650','00660','00562']
     Energy_metabolism_pathway_numbers = ['00190','00195','00196','00710','00720','00680','00910','00920']
@@ -60,9 +68,13 @@ def KEGG_organism_all_metabolic_pathway_retriever(KEGG_organism_code:str) -> str
     all_metabolic_pathway_ids_for_this_organism_string = separator.join(all_metabolic_pathway_ids_for_this_organism)
     return all_metabolic_pathway_ids_for_this_organism_string
 
+
 def KEGG_pathway_list_decoder(KEGG_pathways: str,organism_code: str) -> list:
     """
-    This method decodes the string provided by the commandline input (delimiter == $) into a list of KEGG pathway ids & checks whether the list contains valid pathway ids.
+    This method makes a list of KEGG pathway ids for a specific organism based on the KEGG_pathways string and checks whether the list contains valid pathway ids.
+    :param KEGG_pathways: a string containing KEGG pathway ids of the specified organism separated by the delimiter '$'
+    :param organism_code: the code that KEGG uses for a specific organism (e.g. 'pae' for Pseudomonas aeruginosa PAO1)
+    :return: a list containing the KEGG pathway ids that are in the KEGG_pathways string
     """
 
     #remove spaces and split the string in a list of pathway ids
@@ -82,9 +94,15 @@ def KEGG_pathway_list_decoder(KEGG_pathways: str,organism_code: str) -> list:
 
     return list_pathways
 
+
 def KEGG_interacion_type_decoder(selected_KEGG_interaction_types_string:str) -> list:
     """
-    This method decodes the string provided by the commandline input (delimiter == $) into a list of interaction types that are going to be included into the network & checks whether the specified types are valid.
+    This method makes a list of interaction types based on the selected_KEGG_interaction_types_string string & checks whether the specified types are valid.
+    :param selected_KEGG_interaction_types_string: a string containing KEGG interaction types separated by the delimiter '$'.
+        There are six possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel.
+        The chemical type and reaction type can not be selected together.
+        The ECrel type and reaction type can not be selected together.
+    :return: a list containing the interaction types specified in the selected_KEGG_interaction_types_string
     """
 
     #remove spaces and split the string in a list of interaction types
@@ -112,11 +130,13 @@ def KEGG_interacion_type_decoder(selected_KEGG_interaction_types_string:str) -> 
 
     return interaction_types_list
 
+
 def kgml_reader(path_to_pathway_kgml_file) -> list:
     """
-    This method uses the list provided by KEGG_pathway_list_decoder to look up the relevant in the KEGG database using the KEGG API.
-    During the course of this process, this method will dictionaries containing all the information of KEGG entries, relations and reactions.
-    The following dictionaries are returned as a list:
+    This method will construct a list of dictionaries containing all the information on KEGG entries, relations and reactions contained in a KGML file.
+
+    :param path_to_pathway_kgml_file: the path to the kgml file that contains all the info about a certain pathway
+    :return: A list containing the following dictionaries:
         0) entry_dict
             # format of entry_dict per entry type:
                 # compound - id:[type (str),name (list)]
@@ -214,15 +234,43 @@ def kgml_reader(path_to_pathway_kgml_file) -> list:
     # return a list containing the different dictionaries
     return [entry_dict, genes_reaction_dict, relation_dict, reaction_dict]
 
-def network_builder(kgml_information_list,organism_code: str,selected_interaction_types: list, reverse_interaction_doubler: bool) -> pd.DataFrame:
-    """
-    This method uses the dictionaries made by kgm_reader() to build a pandas dataframe that contains the information to make a network.
-            format: source source_id   source_type target_id   target_type   interaction_type(reaction,...)  interaction_id(if present)  interaction_info(reversible,irreversible,..)
 
-    This network may contain the following types of interactions: chemical, reaction, ECrel, PPrel, GErel, PCrel
+def network_builder(kgml_information_list:list,organism_code: str,selected_interaction_types: list, reverse_interaction_doubler: bool) -> pd.DataFrame:
+    """
+    This method uses the dictionaries made by kgml_reader() to build a pandas dataframe that contains the information of a pathway in a network table format..
+
+    :param kgml_information_list: A list containing info about a specific pathway/kgml files. This info is stored in the following dictionaries:
+        Element 0: entry_dict
+            # format of entry_dict per entry type:
+                # compound - id:[type (str),name (list)]
+                # gene - id:[type (str),name (list),reaction (str)]
+                # group - id:[type (str), name(list), components (list)]          the name of a group == ["undefined"]
+        Element 1: genes_reaction_dict
+            # format:
+                # entry_reaction_KEGG_id:entry_names (list of gene names)
+        Element 2: relation_dict
+            # format:
+                # id:[entry_id_1 (str), entry_id_2 (str), type (str), interaction_info (str)]
+        Element 3: reaction_dict
+            # format:
+                # reaction_KEGG_id:[reaction_type,reaction_substrate_ids,reaction_products_ids]
+    :param organism_code: the code that KEGG uses for a specific organism (e.g. 'pae' for Pseudomonas aeruginosa PAO1)
+    :param selected_interaction_types: a list of all the interaction types that need to be included in the network pandas dataframe.
+        This network may contain the following types of interactions: chemical, reaction, ECrel, PPrel, GErel, PCrel
         note: chemical and reaction can not be selected together
         note: reaction and ECrel can not be selected together
+    :param reverse_interaction_doubler: if set to true, reversible reaction edges will be contained in the network table in two directions (A to B, B to A).
+    :return: a pandas dataframe that contains all the network information.
+        Format network dataframe:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are six possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
     """
+
     # lists from kgml_reader
     entry_dict = kgml_information_list[0]
     genes_reaction_dict = kgml_information_list[1]
@@ -405,11 +453,30 @@ def network_builder(kgml_information_list,organism_code: str,selected_interactio
 
     return pathway_network_table
 
+
 def KEGG_network_constructor_from_list(KEGG_pathways_list: list,organism_code: str,KEGG_interaction_types:list,path_outputfile: str, reverse_interaction_doubler: bool):
     """
-    This method will create a table containing network information of the KEGG pathways described in KEGG pathways list.
+    This method will create tsv file containing network information of the KEGG pathways described in the KEGG pathways list.
         Note: this method assumes that the pathway list is totally correct (see method: KEGG_pathway_list_decoder).
         Note: this method assumes that the list of selected interaction types is totally correct (see method: KEGG_interacion_type_decoder).
+
+    :param KEGG_pathways_list: a list of KEGG pathway ids of a specific organism in the KEGG database
+    :param organism_code: the code that KEGG uses for a specific organism (e.g. 'pae' for Pseudomonas aeruginosa PAO1)
+    :param KEGG_interaction_types: a list of all the interaction types that need to be included in the network table.
+        This network may contain the following types of interactions: chemical, reaction, ECrel, PPrel, GErel, PCrel
+        note: chemical and reaction can not be selected together
+        note: reaction and ECrel can not be selected together
+    :param path_outputfile: path to the output file (includes file name) (e.g. C:/test/all_metabolic_reactions_pae.txt)
+    :param reverse_interaction_doubler: if set to true, reversible reaction edges will be contained in the network table in two directions (A to B, B to A).
+    :return: a tsv file containing info on KEGG pathways in a network format.
+        Format network tsv file:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are seven possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel,identical_id_connection)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
     """
 
     Total_network_table = pd.DataFrame(columns=['source_id','source_type','target_id','target_type','interaction_type','interaction_id','interaction_info']) #per pathway a dataframe is created. It is then added to the total network table.
@@ -526,13 +593,35 @@ def KEGG_network_constructor_from_list(KEGG_pathways_list: list,organism_code: s
     #writing pandas dataframe to tsv
     Total_network_table.to_csv(path_outputfile,sep='\t',index=False)
 
-def KEGG_network_constructor_from_string(KEGG_pathways_string: str,organism_code: str,selected_KEGG_interaction_types_string: str,output_directory: str, reverse_interaction_doubler = False):
+
+def KEGG_network_constructor_from_string(KEGG_pathways_string: str,organism_code: str,selected_KEGG_interaction_types_string: str,path_outputfile: str, reverse_interaction_doubler = False):
     """
-    This method will create a table containing network information of the KEGG pathways described in KEGG pathways string.
+    This method will create tsv file containing network information of the KEGG pathways described in the KEGG pathways string.
+        Note: this method assumes that the pathway list is totally correct (see method: KEGG_pathway_list_decoder).
+        Note: this method assumes that the list of selected interaction types is totally correct (see method: KEGG_interacion_type_decoder).
+
+    :param KEGG_pathways_string: a string containing KEGG pathway ids of a specific organism in the KEGG database separated by the delimiter '$'.
+    :param organism_code: the code that KEGG uses for a specific organism (e.g. 'pae' for Pseudomonas aeruginosa PAO1)
+    :param selected_KEGG_interaction_types_string: a string of all the interaction types that need to be included in the network table separated by the delimiter '$'.
+        This network may contain the following types of interactions: chemical, reaction, ECrel, PPrel, GErel, PCrel
+        note: chemical and reaction can not be selected together
+        note: reaction and ECrel can not be selected together
+    :param path_outputfile: path to the output file (includes file name) (e.g. C:/test/all_metabolic_reactions_pae.txt)
+    :param reverse_interaction_doubler: if set to true, reversible reaction edges will be contained in the network table in two directions (A to B, B to A). False by default.
+    :return: a tsv file containing info on KEGG pathways in a network format.
+        Format network tsv file:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are seven possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel,identical_id_connection)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
     """
     selected_KEGG_interaction_types_list = KEGG_interacion_type_decoder(selected_KEGG_interaction_types_string)
     KEGG_pathways_list = KEGG_pathway_list_decoder(KEGG_pathways_string,organism_code)
-    KEGG_network_constructor_from_list(KEGG_pathways_list,organism_code,selected_KEGG_interaction_types_list,output_directory,reverse_interaction_doubler)
+    KEGG_network_constructor_from_list(KEGG_pathways_list,organism_code,selected_KEGG_interaction_types_list,path_outputfile,reverse_interaction_doubler)
+
 
 def network_merger(path_inputfile_network_1:str,path_inputfile_network_2:str,connect_identical_names:bool,output_directory_and_filename: str):
     """
@@ -695,3 +784,8 @@ def network_merger(path_inputfile_network_1:str,path_inputfile_network_2:str,con
 metabolic_pathways_pae = KEGG_organism_all_metabolic_pathway_retriever("pae")
 
 KEGG_network_constructor_from_string(metabolic_pathways_pae,"pae","reaction","C:/test/all_metabolic_reactions_pae_02072024.txt")
+
+
+"""
+    This method uses the list provided by KEGG_pathway_list_decoder to look up the relevant in the KEGG database using the KEGG API.
+    During the course of this process,"""

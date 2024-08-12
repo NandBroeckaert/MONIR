@@ -24,6 +24,7 @@ def subnetwork_inclusion_initiator(input_node:Node,network_node_objects_dict: di
         neighbour = network_node_objects_dict[neighbour_id]
         neighbour.inclusion_in_subnetwork = True #levels should be zero, so there is no need to reset them again
 
+
 def subnetwork_inclusion_elongator(input_node:Node,previous_level_assigned_node: Node,network_node_objects_dict: dict,directionality_reaction:str,directionality_other:str,distance_level_limit:int):
     """
     This method sets the inclusion_in_subnetwork attribute of the requested direct neighbours of the input_node to True and also updates the level attribute of these nodes (excluding the previous_level_assigned_node).
@@ -122,6 +123,7 @@ def subnetwork_inclusion_elongator(input_node:Node,previous_level_assigned_node:
                 else:  # gene & group_gene
                     raise Exception("Error: odd edge defined as reaction. Probably, group - group.")
 
+
 def subnetwork_node_list_constructor(network_node_objects_dict: dict,distance_level_limit:int) -> list:
     """
     This method will compile a list of all the nodes for which the inclusion_in_subnetwork attribute is set to True and the level attribute is smaller than the distance_level_limit.
@@ -138,6 +140,7 @@ def subnetwork_node_list_constructor(network_node_objects_dict: dict,distance_le
         if node.inclusion_in_subnetwork and node.level < distance_level_limit:
             node_id_list.append(node_id)
     return node_id_list
+
 
 def single_subnetwork_table_constructor(full_network_pd:pd.DataFrame,node_id_list: list,incl_neighbours:bool)-> pd.DataFrame:
     """

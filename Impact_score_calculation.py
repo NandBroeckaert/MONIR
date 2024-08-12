@@ -1,16 +1,7 @@
-"""This script aims to: 1) read the tsv file containing all the required information concerning the biological
-network (transcriptional network,metabolic network , or a combination of the two) 2) construct a network out of node
-objects. Later, this network can be used to calculate impact scores of genes.
-
-The input tsv file is expected to have the following format:
-    Column 0: "Source_ID"
-    Column 1: "Source_Type"
-    Column 2: "Target_ID"
-    Column 3: "Target_Type"
-    Column 4: "interaction_type"
-    Column 5: "interaction_id"
-    Column 6: "interaction_info"
-The output will be a network comprised of gene and cpd nodes.
+"""These methods aim to:
+1) Read the tsv file containing all the required information concerning the biological
+network (e.g. a transcriptional network, metabolic network, or a combination of the two) and construct a network out of node objects.
+2) Calculate an impact scores of genes in the network. Here, the impact score represents a sort of probability that the gene in question plays a role in the omics changes observed in the network.
 """
 
 import pandas as pd
@@ -24,6 +15,32 @@ class Node:
     """
 
     def __init__(self, id, type, previous_nodes, next_nodes, weight, level, changed, changed_omics_type,inclusion_in_subnetwork):
+        """
+        :param id: a string that represents the identifier of the node
+            Note: compounds should have a name that starts with 'cpd:' (e.g. cpd:C06730).
+            Note: genes that are part of a KEGG pathway will have the following format: genename_pathwayid (e.g. PA2507_rn:R05299)
+            Note: a gene that is part of several KEGG pathways will be stored in multiple nodes. Their ids will be very similar, but the second part of the id will be unique due to the unique KEGG pathway id (e.g. gene1_reaction1, gene1_reaction2, gene1_reaction3,...)
+        :param type: a string that represents the type of node
+            Note: three options are available: gene, group_gene, compound
+        :param previous_nodes: a list of lists that contains information on the previous nodes (meaning the sources of directed edges towards this node).
+        These lists in this list consist of three parts: the id of the previous node, the interaction type and the interaction info (see KGG_network_construction module for more info on interaction info).
+            Format: [[previous_node1_id, previous_node1_interaction_type, previous_node1_interaction_info],[previous_node2_id, previous_node2_interaction_type, previous_node2_interaction_info],...]
+            Note: there are seven possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel,identical_id_connection
+            Note: possible interaction info: e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types
+        :param next_nodes: a list of list that contains information on the next nodes (meaning the targets of directed edges starting from this node).
+            Format: same as for the previous_nodes parameter.
+        :param weight: this float value represent the contribution of this node to the impact score of a certain node in the network
+        :param level: this integer value represent the number of steps this node is removed from a certain node in the network
+            Note: default value = 0
+            Note: direct neighbours of a node have a level of zero (so level assignment starts at zero)
+            Note: in a chemical reaction, the level is only raised at each next node that represents a compound.
+            Note: you need a second variable if you want to select all nodes within a certain number of steps from a certain node, if you didn't calculate the level value for all nodes in the network (because you will have a pattern like this: start node - 0,1,2,3,...,X,0,0,0,...)
+        :param changed: set to true if omics changes were measured for this node.
+        :param changed_omics_type: a string which represents the type of omics data for which a change was measured for this node.
+            Note: types that can be used for a more specific version of the impact score calculation: proteomics,transcriptomics,methylation,ubiquitination,glycosylation,phosphorylation.
+        :param inclusion_in_subnetwork: a boolean parameter that is used to make subnetworks of the large network for downstream visualisation (see subnetwork_selector_for_visualisation.py).
+        """
+
         self.id = id
         self.type = type
         self.previous_nodes = previous_nodes
@@ -36,24 +53,31 @@ class Node:
 
 
 def unique_list_of_list_constructor(non_unique_list_of_lists: list) -> list:
+    """
+    This function will take a list of lists and return a unique list of lists.
+    """
     unique_list_of_lists = [list(x) for x in set(tuple(x) for x in non_unique_list_of_lists)]
     return unique_list_of_lists
 
 
 def network_table_reader(path_inputfile_network: str, reverse_interaction_doubled: bool) -> dict:
     """
-    This method reads in a tsv file of the following format:
-        Column 0: "source_id"
-        Column 1: "source_type"
-        Column 2: "target_id"
-        Column 3: "target_type"
-        Column 4: "interaction_type"
-        Column 5: "interaction_id"
-        Column 6: "interaction_info"
-    And returns a dictionary of node objects {node_id:node_object}
+    This method reads in a tsv file containing network information and returns a dictionary of node objects that represent the network {node_id:node_object}.
 
-    A node's target previous and next nodes lists should be not contain duplicates. A node can only refer once to another node!
-    A node that is part of a reversible reaction be contained in the previous and next nodes lists of nodes that are part of this interaction.
+    :param path_inputfile_network: path to the input file. A tsv file containing all the network information.
+        Format network tsv file:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are six possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
+    :param reverse_interaction_doubled: If set to true, reversible reaction edges are contained in the network table in two directions (A to B, B to A).
+    :return: a dictionary of node objects, representing a network.
+        Format: {node_id:node_object}.
+        Note: a node's target previous and next nodes lists should not contain duplicates. A node can only refer once to another node!
+        Note: a node that is part of a reversible reaction will be contained in the previous and next nodes lists of nodes that are part of this interaction.
     """
     # validation input ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if (type(path_inputfile_network) != str) or (type(reverse_interaction_doubled) != bool):
@@ -161,7 +185,11 @@ def network_table_reader(path_inputfile_network: str, reverse_interaction_double
 
 def identical_node_list_constructor(input_node: Node, identical_nodes: list, network_node_objects_dict: dict):
     """
-    This method will construct a list of Node objects that are connected to the original node via identical_id_connection type interactions.
+    This method will grow an empty list to a list of Node objects that are connected to the original node via identical_id_connection type interactions.
+
+    :param input_node: the starting node of the search
+    :param identical_nodes: if provided with an empty list, the method will turn it into a list that contains all Node objects that are connected to the original node via identical_id_connection type interactions.
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
     """
     # validation input -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if type(input_node) != Node:
@@ -184,6 +212,14 @@ def identical_node_list_constructor(input_node: Node, identical_nodes: list, net
 
 
 def identical_node_id_list_constructor(input_node: Node, network_node_objects_dict: dict):
+    """
+    This method will return a list of Node objects that are connected to the original node via identical_id_connection type interactions.
+    Note: this method does not require you to provide an empty list. The identical_node_list_constructor method does (see identical_nodes paramter).
+
+    :param input_node: the starting node of the search
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :return: a list of Node objects that are connected to the original node via identical_id_connection type interactions.
+    """
     identical_node_list = []
     identical_node_list_constructor(input_node, identical_node_list, network_node_objects_dict)
 
@@ -195,9 +231,11 @@ def identical_node_id_list_constructor(input_node: Node, network_node_objects_di
 
 def id_dict_and_list_of_identical_node_groups_constructor(network_node_objects_dict: dict) -> list:
     """
-    This method will create two things:
-    1) a list of all the ids of nodes that have an identical_id_connection interaction type with another node.
-    2) a dictionary in which the keys are the shortest id variant inside a group of nodes that are connected by identical_id_connections, and the values are a list of ids of that group
+    This method will create and return a list that contains two things:
+        element 0) a list of all the ids of nodes that have an identical_id_connection interaction type with another node.
+        element 1) a dictionary in which the keys are the shortest id variant inside a group of nodes that are connected by identical_id_connections, and the values are a list of ids of that group
+
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
     """
     # validation input -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if type(network_node_objects_dict) != dict:
@@ -223,6 +261,17 @@ def id_dict_and_list_of_identical_node_groups_constructor(network_node_objects_d
 
 
 def direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor(input_node:Node,directionality_reaction:str,directionality_other:str) -> list:
+    """
+    This method will make a list of lists containing info (id, interaction type, interaction type) about the direct neighbours of the input node.
+
+    :param input_node: The starting node of the search.
+    :param directionality_reaction: A string that determines which neighbours that are connected to the input node via an interaction of the reaction interaction type will be included in the list of lists.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only neighbours that are downstream of the input node are included.
+    :param directionality_other: A string that determines which neighbours that are connected to the input node via an interaction of the non-reaction interaction type will be included in the list of lists.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only neighbours that are downstream of the input node are included.
+    :return: a list of lists containing info (id, interaction type, interaction type) about the direct neighbours of the input node.
+        Format: [[neighbour1_id, neighbour1_inputnode_interactiontype, neighbour1_inputnode_interactioninfo],...]
+    """
     previous_nodes = input_node.previous_nodes
     neighbouring_nodes = input_node.next_nodes  # next/downstream nodes are always included. only the previous/upstream nodes are optional.
     for element in previous_nodes:
@@ -238,8 +287,14 @@ def direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_construct
 def id_list_of_neighbours_constructor(input_node: Node, network_node_objects_dict: dict, direction_of_neighbours: str,
                                       interaction_type: str) -> list:
     """
-     This method creates a list of ids of the neighbours of a node (This method will return all the neighbours of a group of nodes that have variants of the same id)
-     """
+    This method will return a list of all the ids of the direct neighbours of a group of nodes that are connected via identical_id_connection type interactions.
+
+    :param input_node: The direct neighbour of the group of nodes that are connected via identical_id_connection type interactions and contains this input node will be returned
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param direction_of_neighbours: a string that determines which neighbours will be included in the output based on how the nodes are positioned and connected to the input node. Three options are available: "previous" (aka upstream nodes), "next" (aka downstream nodes), "all".
+    :param interaction_type: a string that determines which neighbours will be included in the output based on the type of interaction between the neighbours and the input node. Three options are available: "reaction", "other" (all the non-reaction interaction types), "all".
+    :return: a list of node identifiers
+    """
     # validation input -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if type(input_node) != Node:
         raise Exception("Ivalid first input. It should be a node object.")
@@ -253,8 +308,7 @@ def id_list_of_neighbours_constructor(input_node: Node, network_node_objects_dic
 
     possible_direction_of_neighbours = ["previous", "next", "all"]
     if direction_of_neighbours not in possible_direction_of_neighbours:
-        raise Exception(
-            "Invalid direction_of_neighbours was specified. Only use one of the following: previous, next, all.")
+        raise Exception("Invalid direction_of_neighbours was specified. Only use one of the following: previous, next, all.")
 
     possible_interaction_types = ["reaction", "other", "all"]
     if interaction_type not in possible_interaction_types:
@@ -316,6 +370,12 @@ def id_list_of_neighbours_constructor(input_node: Node, network_node_objects_dic
 def special_node_degree_calculator(input_node: Node, network_node_objects_dict: dict, degree_interaction_type: str,degree_type) -> int:
     """
     This method calculates the in, out or total degree of a note for specific degree interaction types (reaction or other) of a node.
+
+    :param input_node: The input node
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param degree_interaction_type: only connections of the specified interaction type will be considered in the degree calculation. Three options are available: "reaction", "other" (aka non-reaction types), "all" (reaction + non-reaction).
+    :param degree_type: The type of degree. Three options are available: "indegree", "outdegree", "total".
+    :return: The in, out or total degree of a node (based on the specified interaction type)
     """
     # validation input -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if type(input_node) != Node:
@@ -394,7 +454,18 @@ def special_node_degree_calculator(input_node: Node, network_node_objects_dict: 
 
 
 def node_centrality_modifier_calculator(input_node: Node, network_node_objects_dict: dict, degree_type_other: str, degree_type_reaction: str) -> float:
-    "Calculates the centrality modifier of node."
+    """
+    This method calculates the centrality modifier of a node.
+
+    :param input_node: node for which the modifier is calculated
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param degree_type_other: The type of degree calculated for the non-reaction type interactions. Three options are available: "indegree", "outdegree", "total".
+    :param degree_type_reaction: The type of degree calculated for the reaction type interactions. Three options are available: "indegree", "outdegree", "total".
+    :return: the centrality modifier of the node (float)
+        Note: The reasoning behind this modifier is the following: if a node has more connections, the observed omics change for that node is less likely to be caused by the node for which we are calculating the impact score. Hence, the weight that is contributed to the next node should be lower.
+        Note: The modifier is equal to the sum of the degree for reaction and non-reaction type interactions minus one. -1 because there is already a centrality penalty included in the weight inherited by the previous node. As such, we don't want to penalize twice.
+        Note: The modifier has a minimum value of 1.
+    """
 
     # validation input -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if type(input_node) != Node:
@@ -416,6 +487,17 @@ def node_centrality_modifier_calculator(input_node: Node, network_node_objects_d
 
 def node_weight_distribution_initiator(input_node: Node, network_node_objects_dict: dict, start_weight_value: float,
                                        directionality_reaction: str, directionality_other: str):
+    """
+    This method assigns a starting weight to certain direct neighbour nodes of the group of nodes that are connected via identical_id_connection type interactions and contain this input node
+
+    :param input_node: a starting weight will be assigned to certain direct neighbour nodes of the group of nodes that are connected via identical_id_connection type interactions and contain this input node.
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param start_weight_value: weight (float value) that will be assigned to the neighbouring nodes.
+    :param directionality_reaction: A string that determines which neighbours that are connected to the input node via an interaction of the reaction interaction type will be assigned the starting weight.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only neighbours that are downstream of the input node are included.
+    :param directionality_other: A string that determines which neighbours that are connected to the input node via an interaction of the non-reaction interaction type will be assigned the starting weight.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only neighbours that are downstream of the input node are included.
+    """
     # check validity of inputs ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     possible_directionalities = ["unidirectional", "bidirectional"]
     if (directionality_reaction not in possible_directionalities) or (
@@ -468,6 +550,21 @@ def node_weight_distribution_elongator(
         distance_modification: bool,
         distance_modification_step_penalty: float,
         distance_level_limit: int):
+    """
+    After assigning starting weights, this method will be used to update the weight of the other nodes in the network (following the options that were selected in the input variables).
+
+    :param input_node:
+    :param previous_weight_assigned_node:
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param directionality_reaction:
+    :param directionality_other:
+    :param centrality_modification:
+    :param missingness_modification:
+    :param missingness_modification_step_penalty:
+    :param distance_modification:
+    :param distance_modification_step_penalty:
+    :param distance_level_limit:
+    """
     """
     Updates the weights of the nodes in the network.
     For each node, weights are first distributed to the neighbouring non-reaction linked nodes.
@@ -607,7 +704,10 @@ def node_weight_distribution_elongator(
 
 
 def node_weight_resetter(network_node_objects_dict: dict):
-    "sets all node weights back to zero"
+    """
+    Sets the weight of all the nodes in the network to zero.
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    """
     if type(network_node_objects_dict) != dict:
         raise Exception("The network should be contained in a dictionary: {node_id:node_object}.")
 
@@ -620,7 +720,11 @@ def node_weight_resetter(network_node_objects_dict: dict):
 
 
 def node_level_resetter(network_node_objects_dict: dict):
-    "sets all node levels back to zero"
+    """
+    sets the level parameter for all the nodes in the network to zero.
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    """
+
     if type(network_node_objects_dict) != dict:
         raise Exception("The network should be contained in a dictionary: {node_id:node_object}.")
 
@@ -632,7 +736,11 @@ def node_level_resetter(network_node_objects_dict: dict):
         node.level = 0
 
 def node_inclusion_in_subnetwork_resetter(network_node_objects_dict: dict):
-    "sets all node levels back to zero"
+    """
+    Sets the inclusion_in_subnetwork parameter for all the nodes in the network to False.
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    """
+
     if type(network_node_objects_dict) != dict:
         raise Exception("The network should be contained in a dictionary: {node_id:node_object}.")
 
@@ -643,6 +751,10 @@ def node_inclusion_in_subnetwork_resetter(network_node_objects_dict: dict):
         node.inclusion_in_subnetwork = False
 
 def node_changed_and_omics_type_resetter(network_node_objects_dict: dict):
+    """
+    Sets the changes and changed_omics_type parameter for all the nodes in the network to False and an empty list, respectively.
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    """
     for node_id in network_node_objects_dict.keys():
         # Input validation
         node = network_node_objects_dict[node_id]
@@ -656,6 +768,15 @@ def node_changed_and_omics_type_resetter(network_node_objects_dict: dict):
 
 
 def find_similar_network_node_id(input_node_id: str, network_node_objects_dict: dict):
+    """
+    This method will attempt to find a node in the network with the same or a very similar id to the input_node_id.
+    :param input_node_id: a string that represents a gene of compound or group_gene that is possibly in the network.
+        Note: a compound should have 'cpd:' at the start of the id.
+        Note: this method assumes that your id has the following format 'name_something' (e.g. PA2507_rn:R05299).
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :return: a string that represents the id of the node in the network.
+        Note: if no similar id is found, it will return None.
+    """
     # input validation
     if type(input_node_id) != str:
         raise Exception("The first input should be a string. It should be the id of a node.")
@@ -665,8 +786,7 @@ def find_similar_network_node_id(input_node_id: str, network_node_objects_dict: 
     for node_id in network_node_objects_dict.keys():
         node = network_node_objects_dict[node_id]
         if type(node_id) != str or type(node) != Node:
-            raise Exception(
-                "Wrong object type as key or value in dictionary. Please input a dictionary with {node_id:Node object}.")
+            raise Exception("Wrong object type as key or value in dictionary. Please input a dictionary with {node_id:Node object}.")
 
     # find node in network with a similar id to the input node id -------------------------------------------------------------------------------------------------------------------------------------
     # check for an exact match --> if exists: return the input_node_id
@@ -684,10 +804,14 @@ def find_similar_network_node_id(input_node_id: str, network_node_objects_dict: 
 
 def node_changed_and_omics_type_updater(path_inputfile_node_omics_info: str, network_node_objects_dict: dict):
     """
-    updates the 'changed' and 'changed_omics_type' attributes of the nodes and their identical variants in a dictionary based on info in a table.
-        column 0: node_id (string)
-        column 1: changed (bool)
-        column 2: changed_omics_type (string) (seperated by '$')
+    This method updates the 'changed' and 'changed_omics_type' attributes of the nodes and their identical variants (nodes connected via identical_id_connection type interactions) in the network based on info from a tsv file.
+
+    :param path_inputfile_node_omics_info: path to the tsv file that contains the multi-omics info about nodes in the network.
+        Format of tsv file:
+            column 0: node_id (string)
+            column 1: changed (bool)
+            column 2: changed_omics_type (string) (seperated by '$')
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
     """
     # input validation ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if (type(path_inputfile_node_omics_info) != str) or (type(network_node_objects_dict) != dict):
@@ -742,7 +866,9 @@ def node_changed_and_omics_type_updater(path_inputfile_node_omics_info: str, net
 
 def node_changed_and_omics_type_maximum_background_updater(network_node_objects_dict: dict):
     """
-    This method is used to calculate the maximum impact score for each node. This method helps in this effort by setting all node.changes to true and node.changed_omics_types to all possible omics layers that can influence the impact score.
+    This method sets the changed and changed_omics_types attributes of all the nodes in the network to true and all possible omics layers that can influence the impact score, respectively.
+        Note: This method is used to calculate the maximum impact score for each node.
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
     """
     for node in network_node_objects_dict.values():
         node.changed = True
@@ -760,6 +886,11 @@ def impact_calculator(network_node_objects_dict: dict, interaction_specific: boo
     - main contributing node type
     - node types
     - subscores per node type
+
+    :param network_node_objects_dict:
+    :param interaction_specific:
+    :return:
+
     """
     # Don't count indentical variants (ensure via the node_changed_and_omics_type_updater method)
     # Only count the weight if the right omics info is available.
@@ -1014,6 +1145,39 @@ def general_node_impact_assessor(
         path_output_directory_and_filename: str,
         distance_level_limit=int(100000000),
         include_subnetwork_for_visualisation=True):
+    """
+    This method is used to perform an impact analysis for a given network (tsv file), list of nodes (tsv file) and multi-omics information (tsv file).
+
+    :param path_inputfile_network: path to the input file. A tsv file containing all the network information.
+        Format network tsv file:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are six possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
+    :param reverse_interaction_doubled: If set to true, reversible reaction edges are contained in the network table in two directions (A to B, B to A).
+    :param path_inputfile_node_omics_info: path to the tsv file that contains the multi-omics info about nodes in the network.
+        Format of tsv file:
+            column 0: node_id (string)
+            column 1: changed (bool)
+            column 2: changed_omics_type (string) (seperated by '$')
+    :param path_inputfile_nodes_of_interest:
+    :param directionality_reaction:
+    :param directionality_other:
+    :param interaction_specific:
+    :param start_weight_value:
+    :param centrality_modification:
+    :param missingness_modification:
+    :param missingness_modification_step_penalty:
+    :param distance_modification:
+    :param distance_modification_step_penalty:
+    :param path_output_directory_and_filename:
+    :param distance_level_limit:
+    :param include_subnetwork_for_visualisation:
+    :return:
+    """
     """
         Output: a dataframe containing
         - total impact_score
