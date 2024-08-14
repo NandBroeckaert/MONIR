@@ -29,12 +29,14 @@ class Node:
             Note: possible interaction info: e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types
         :param next_nodes: a list of list that contains information on the next nodes (meaning the targets of directed edges starting from this node).
             Format: same as for the previous_nodes parameter.
-        :param weight: this float value represent the contribution of this node to the impact score of a certain node in the network
+        :param weight: this float value represent the contribution of this node to the impact score of a certain node in the network.
+            Note: the same weight and level should be assigned to a group of 'identical nodes' (aka connected through identical_id_connection type interactions).
         :param level: this integer value represent the number of steps this node is removed from a certain node in the network
             Note: default value = 0
             Note: direct neighbours of a node have a level of zero (so level assignment starts at zero)
             Note: in a chemical reaction, the level is only raised at each next node that represents a compound.
-            Note: you need a second variable if you want to select all nodes within a certain number of steps from a certain node, if you didn't calculate the level value for all nodes in the network (because you will have a pattern like this: start node - 0,1,2,3,...,X,0,0,0,...)
+            Note: you need a second variable if you want to select all nodes within a certain number of steps from a certain node, if you didn't calculate the level value for all nodes in the network (because you will have a pattern like this: start node - 0,1,2,3,...,X,0,0,0,...).
+            Note: the same weight and level should be assigned to a group of 'identical nodes' (aka connected through identical_id_connection type interactions).
         :param changed: set to true if omics changes were measured for this node.
         :param changed_omics_type: a string which represents the type of omics data for which a change was measured for this node.
             Note: types that can be used for a more specific version of the impact score calculation: proteomics,transcriptomics,methylation,ubiquitination,glycosylation,phosphorylation.
@@ -552,25 +554,30 @@ def node_weight_distribution_elongator(
         distance_level_limit: int):
     """
     After assigning starting weights, this method will be used to update the weight of the other nodes in the network (following the options that were selected in the input variables).
+    Specifically, this method calculates and assigns weights to the neighbours of the inputnode (excluding the previous_weight_assigned_node) and then continues this procss for those neighbouring nodes.
+        General formula: potential_new_weight_of_neighbour_node = (input_node.weight / (centrality_modification * neighbour_centrality_modifier+(not centrality_modification))) - (distance_modification * distance_modification_step_penalty) - (missingness_modification * (not input_node.changed) * missingness_modification_step_penalty)
+        Note: nodes are always assigned the highest possible weight (so if the node already has a higher weight that the newly calculated one, the exploration process will stop).
+        Note: the same weight and level should be assigned to a group of 'identical nodes' (aka connected through identical_id_connection type interactions).
+        Note: during weight distribution in a part of the network consisting of reaction type interactions, weights are only assigned to the first gene type node and then metabolite/compound nodes.
+        Note: For each node, weights are first distributed to the neighbouring non-reaction linked nodes. Afterward, weights are assigned to neighbouring nodes connected to the original node via reaction interactions. This allows for more flexibility in terms of the directionality that weights are assigned (e.g. unidirectional for transcriptional interactions and bidirectional for reaction interactions)
 
-    :param input_node:
-    :param previous_weight_assigned_node:
+    :param input_node: weights are calculated and assigned to neighbouring nodes that are in lign with the specified directionalities (e.g. directionality_other) and are not the previous_weight_assigned_node.
+    :param previous_weight_assigned_node: this method is a recursive method. This node and the input node are specified to direct the weight distribution process away from where it started.
+        Note: Previous is meant in the sense that the method explored through the input node via this previous_weight_assigned_node.
     :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
-    :param directionality_reaction:
-    :param directionality_other:
-    :param centrality_modification:
-    :param missingness_modification:
-    :param missingness_modification_step_penalty:
-    :param distance_modification:
-    :param distance_modification_step_penalty:
-    :param distance_level_limit:
+    :param directionality_reaction: A string that determines which neighbours that are connected to the input node via an interaction of the reaction interaction type will be assigned a weight.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only neighbours that are downstream of the input node are included.
+    :param directionality_other: A string that determines which neighbours that are connected to the input node via an interaction of the non-reaction interaction type will be assigned a weight.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only neighbours that are downstream of the input node are included.
+    :param centrality_modification: boolean that determines whether a centrality modifier is used.
+    :param missingness_modification: boolean that determines whether a missingness modifier is used.
+    :param missingness_modification_step_penalty: float value that represents the penalty for missing data (see general formula in the method description)
+    :param distance_modification: boolean that determines whether a distance modifier is used.
+    :param distance_modification_step_penalty: float value that represents the penalty for distance to the node for which you want to calculate the impact score (see general formula in the method description)
+    :param distance_level_limit: the weight distribution process will be halted when at this node level. (so nodes with this level can have assigned weights, but nodes with this level +1 can't).
+        Note: in chemical reactions (so reaction type interactions), jumping a gene to the following metabolite is equal to one step.
     """
-    """
-    Updates the weights of the nodes in the network.
-    For each node, weights are first distributed to the neighbouring non-reaction linked nodes.
-    Afterward, weights are assigned to neighbouring nodes connected to the original node via reaction interactions.
-    This allows for more flexibility in terms of the directionality that weights are assigned (e.g. unidirectional for transcriptional interactions and bidirectional for reaction interactions)
-    """
+
     # validation inputs ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     if type(input_node) != Node or type(previous_weight_assigned_node) != Node:
         raise Exception("The first two inputs should be Node objects.")
@@ -877,19 +884,44 @@ def node_changed_and_omics_type_maximum_background_updater(network_node_objects_
 
 def impact_calculator(network_node_objects_dict: dict, interaction_specific: bool) -> pd.DataFrame:
     """
-    Output: a dataframe containing
-    - total impact_score
-    - nodes that contribute to impact score
-    - sub impact scores of nodes that contribute to impact score
-    - levels of contibuting nodes
-    - max level of a contributing node
-    - main contributing node type
-    - node types
-    - subscores per node type
+    After the weight, changed and changed_omics_type attributes of the node objects in the network have been updated, this method is used to generate the output of the impact analysis for a node of interest.
+        Formula: total impact score of NOI = sum(weights of nodes that pass the criteria)
+        Selection criteria:
+            - changed attribute of node == True
+            - weight attribute of node > 0
+            - changed_omics_type attribute of node can also be used as a criterium ==> see interaction_specific parameter
+        Note: weights are calculated with respect to the node of interest (so for each node of interest, the weights have to be recalculated).
 
-    :param network_node_objects_dict:
-    :param interaction_specific:
-    :return:
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param interaction_specific: (boolean) if set to True, the changed_omics_type attribute of the nodes in the network will also be taken into account when calculating the impact score of the node of interest.
+        Note: if interaction_specific is set to Tue, a node also needs to adhere to the following rules before it is taken into account:
+        - the layer that we have info about for a certain gene node should be able to have been affected by an upstream node. In other words:
+            - have transcriptomics or proteomics info about a changing node that is a target of a GErel type interaction.
+            - have methylation info about a changing node that is a target of a PPrel type interaction with methylation interaction info.
+            - have ubiquitination info about a changing node that is a target of a PPrel type interaction with ubiquitination interaction info.
+            - have glycosylation info about a changing node that is a target of a PPrel type interaction with glycosylation interaction info.
+            - have phosphorylation info about a changing node that is a target of a PPrel type interaction with phosphorylation or dephosphorylation interaction info.
+        - the layer that we have info about for a certain gene node should be abble to affect a downstream node. In other words:
+            - have transcriptomics or proteomics info about a changing node that is a source of a GErel type interaction.
+            - have transcriptomics or proteomics info about a changing node that is a source of a PPrel type interaction with methylation interaction info.
+            - have transcriptomics or proteomics info about a changing node that is a source of a PPrel type interaction with ubiquitination interaction info.
+            - have transcriptomics or proteomics info about a changing node that is a source of a PPrel type interaction with glycosylation interaction info.
+            - have transcriptomics or proteomics info about a changing node that is a source of a PPrel type interaction with phosphorylation or dephosphorylation interaction info.
+        - we have metabolomics data for a compound node
+
+    :return: a dataframe containing the results of the impact analysis.
+        Format:
+            Column 0: total_impact_score
+            Column 1: contributing_nodes (seperated by '$')
+            Column 2: contributing_nodes_sub_scores (seperated by '$')
+            Column 3: contributing_nodes_max_level
+            Column 4: contributing_nodes_level (seperated by '$')
+            Column 5: top_impacting_node_type
+            Column 6: node_types (seperated by '$')
+            Column 7: node_types_sub_scores (seperated by '$')
+        Note: The subscores in column 2 and 4 correspond to the node ids in column 1.
+        Note: The subscores in column 7 correspond to the node types in column 6.
+
 
     """
     # Don't count indentical variants (ensure via the node_changed_and_omics_type_updater method)
@@ -1051,19 +1083,42 @@ def single_node_impact_assessor(
         distance_level_limit: int
 ) -> pd.DataFrame:
     """
-        Output: a dataframe containing
-        - total impact_score
-        - nodes that contribute to impact score
-        - sub impact scores of nodes that contribute to impact score
-        - main contributing node type
-        - node types
-        - subscores per node type
-        """
+    :param NOI_id: id of the node for which you want to do an impact analysis. (str)
+    :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param directionality_reaction: A string that determines which nodes that are connected (directly and indirectly) to the node of interest (NOI) with reaction type interactions will be taken into account for the impact analysis.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only downstream nodes of the speciefied interaction type will possibly contribute to the impact of a NOI.
+    :param directionality_other: A string that determines which nodes that are connected (directly and indirectly) to the node of interest (NOI) with non-reaction type interactions will be taken into account for the impact analysis.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only downstream nodes of the speciefied interaction type will possibly contribute to the impact of a NOI.
+    :param interaction_specific: if set to True, the changed_omics_type attribute of the nodes in the network will also be taken into account when calculating the impact score of the node of interest. (for more info see impact_calculator description)
+    :param start_weight_value: weight (float value) that will be assigned to the direct neighbour nodes of the group of nodes that are connected via identical_id_connection type interactions and contain the node of interest.  (for more info see node_weight_distribution_initiator description)
+    :param centrality_modification: boolean that determines whether a centrality modifier is used.
+    :param missingness_modification: boolean that determines whether a missingness modifier is used.
+    :param missingness_modification_step_penalty: float value that represents the penalty for missing data (see node_weight_distribution_elongator description)
+    :param distance_modification: boolean that determines whether a distance modifier is used.
+    :param distance_modification_step_penalty: float value that represents the penalty for distance to the node for which you want to calculate the impact score (see node_weight_distribution_elongator description)
+    :param distance_level_limit: the weight distribution process will be halted when at this node level. (so nodes with this level can have assigned weights, but nodes with this level +1 can't).
+    :return: a dataframe containing the results of the impact analysis.
+        Format:
+            Column 0: NOI_id
+            Column 1: NOI_network_id (similar id to NOI; see find_similar_network_node_id description)
+            Column 2: total_impact_score
+            Column 3: contributing_nodes (seperated by '$')
+            Column 4: contributing_nodes_sub_scores (seperated by '$')
+            Column 5: contributing_nodes_max_level
+            Column 6: contributing_nodes_level (seperated by '$')
+            Column 7: top_impacting_node_type
+            Column 8: node_types (seperated by '$')
+            Column 9: node_types_sub_scores (seperated by '$')
+        Note: The subscores in column 4 and 6 correspond to the node ids in column 3.
+        Note: The subscores in column 9 correspond to the node types in column 8.
+    """
+
     similar_NOI_id = find_similar_network_node_id(NOI_id,network_node_objects_dict)
     if similar_NOI_id == None:
         similar_NOI_id = "No similar node_id in network"
         result_NOI_dict = {"total_impact_score": [""], "contributing_nodes": [""],
                             "contributing_nodes_sub_scores": [""],
+                            "contributing_nodes_max_level": [""],"contributing_nodes_level":[""],
                             "top_impacting_node_type": [""], "node_types": [""],
                             "node_types_sub_scores": [""]}
         result_NOI_pd = pd.DataFrame.from_dict(result_NOI_dict)
@@ -1147,6 +1202,7 @@ def general_node_impact_assessor(
         include_subnetwork_for_visualisation=True):
     """
     This method is used to perform an impact analysis for a given network (tsv file), list of nodes (tsv file) and multi-omics information (tsv file).
+    Additionally, subnetworks for visualsation of high scoring nodes of interest can automatically be made.
 
     :param path_inputfile_network: path to the input file. A tsv file containing all the network information.
         Format network tsv file:
@@ -1163,30 +1219,53 @@ def general_node_impact_assessor(
             column 0: node_id (string)
             column 1: changed (bool)
             column 2: changed_omics_type (string) (seperated by '$')
-    :param path_inputfile_nodes_of_interest:
-    :param directionality_reaction:
-    :param directionality_other:
-    :param interaction_specific:
-    :param start_weight_value:
-    :param centrality_modification:
-    :param missingness_modification:
-    :param missingness_modification_step_penalty:
-    :param distance_modification:
-    :param distance_modification_step_penalty:
-    :param path_output_directory_and_filename:
-    :param distance_level_limit:
-    :param include_subnetwork_for_visualisation:
-    :return:
+    :param path_inputfile_nodes_of_interest: path to the tsv file that contains the list of identifiers for which you want to do the impact analysis (nodes of interest).
+    :param directionality_reaction: A string that determines which nodes that are connected (directly and indirectly) to the node of interest (NOI) with reaction type interactions will be taken into account for the impact analysis.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only downstream nodes of the speciefied interaction type will possibly contribute to the impact of a NOI.
+    :param directionality_other: A string that determines which nodes that are connected (directly and indirectly) to the node of interest (NOI) with non-reaction type interactions will be taken into account for the impact analysis.
+        Note: two options are available: unidirectional or bidirectional. If unidirectional is selected, only downstream nodes of the speciefied interaction type will possibly contribute to the impact of a NOI.
+    :param interaction_specific: if set to True, the changed_omics_type attribute of the nodes in the network will also be taken into account when calculating the impact score of the node of interest. (for more info see impact_calculator description)
+    :param start_weight_value: weight (float value) that will be assigned to the direct neighbour nodes of the group of nodes that are connected via identical_id_connection type interactions and contain the node of interest.  (for more info see node_weight_distribution_initiator description)
+    :param centrality_modification: boolean that determines whether a centrality modifier is used (see node_weight_distribution_elongator description).
+    :param missingness_modification: boolean that determines whether a missingness modifier is used (see node_weight_distribution_elongator description).
+    :param missingness_modification_step_penalty: float value that represents the penalty for missing data (see node_weight_distribution_elongator description).
+    :param distance_modification: boolean that determines whether a distance modifier is used (see node_weight_distribution_elongator description).
+    :param distance_modification_step_penalty: float value that represents the penalty for distance to the node for which you want to calculate the impact score (see node_weight_distribution_elongator description).
+    :param path_output_directory_and_filename: a path to the tsv file containing the results of the impact analysis.
+        Format:
+            Column 0: NOI_id
+            Column 1: NOI_network_id (similar id to NOI; see find_similar_network_node_id description)
+            Column 2: total_impact_score
+            Column 3: hypothetical_maximum_total_impact_score
+            Column 4: topological_independent_total_impact_score
+            Column 5: contributing_nodes (seperated by '$')
+            Column 6: contributing_nodes_sub_scores (seperated by '$')
+            Column 7: contributing_nodes_max_level
+            Column 8: contributing_nodes_level (seperated by '$')
+            Column 9: top_impacting_node_type
+            Column 10: node_types (seperated by '$')
+            Column 11: node_types_sub_scores (seperated by '$')
+        Note: The subscores in column 4 and 6 correspond to the node ids in column 3.
+        Note: The subscores in column 9 correspond to the node types in column 8.
+    :param distance_level_limit: the weight distribution process will be halted when at this node level. (so nodes with this level can have assigned weights, but nodes with this level +1 can't).
+        Note: by default set to 100000000.
+    :param include_subnetwork_for_visualisation: boolean that determines whether subnetworks that are useful for visualization will be generated for all NOIs hat have an total impact score above the start_weight_value.
+        Note: default == True
+        Note: the subnetwork_table_constructor_from_network_file_and_impact_dataframe method from the Subnetwork_selector_for_visualistation module was used.
+            Parameters:
+                path_inputfile_network: path_inputfile_network
+                reverse_interaction_doubled: reverse_interaction_doubled
+                directionality_reaction: directionality_reaction
+                directionality_other: directionality_other
+                results_impact_analysis_pd: total_extended_impact_analysis_table
+                impact_value_type: "total_impact_score"
+                impact_threshold: start_weight_value
+                distance_level_limit: distance_level_limit
+                distance_level_limit_based_on_impact_results: True
+                incl_neighbours: True
+                output_directory_and_filename: path_output_directory_and_filename+"_subnetwork"
     """
-    """
-        Output: a dataframe containing
-        - total impact_score
-        - nodes that contribute to impact score
-        - sub impact scores of nodes that contribute to impact score
-        - main contributing node type
-        - node types
-        - subscores per node type
-        """
+
     # read in a list of nodes of interest
     if type(path_inputfile_nodes_of_interest) != str:
         raise Exception(
@@ -1278,7 +1357,7 @@ def general_node_impact_assessor(
 
     #GENERATE SUBNETWORKS FOR VISUALIZING RESULTS OF IMPACT ANALYSIS
     if include_subnetwork_for_visualisation:
-        subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,total_extended_impact_analysis_table,"total_impact_score",start_weight_value,distance_level_limit,True,True)
+        subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,total_extended_impact_analysis_table,"total_impact_score",start_weight_value,distance_level_limit,True,True,path_output_directory_and_filename+"_subnetwork")
 
 
 # analyzing acetylomics wih metabolomics  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
