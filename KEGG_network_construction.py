@@ -237,7 +237,7 @@ def kgml_reader(path_to_pathway_kgml_file) -> list:
 
 def network_builder(kgml_information_list:list,organism_code: str,selected_interaction_types: list, reverse_interaction_doubler: bool) -> pd.DataFrame:
     """
-    This method uses the dictionaries made by kgml_reader() to build a pandas dataframe that contains the information of a pathway in a network table format..
+    This method uses the dictionaries made by kgml_reader() to build a pandas dataframe that contains the information of a pathway in a network table format.
 
     :param kgml_information_list: A list containing info about a specific pathway/kgml files. This info is stored in the following dictionaries:
         Element 0: entry_dict

@@ -258,8 +258,12 @@ def subnetwork_table_constructor(path_inputfile_network:str,reverse_interaction_
             Column 5: "interaction_id"
             Column 6: "interaction_info"
     :param reverse_interaction_doubled: If set to true, reversible reaction edges are contained in the network table in two directions (A to B, B to A).
-    :param directionality_reaction: Determines for which neighbours that are connected via reaction type interactions the inclusion_in_subnetwork attributes will be changed. Two possible options are available: "bidirectional" (up- and downstream neighbours) and "unidirectional" (only downstream neighbours)".
-    :param directionality_other: Determines for which neighbours that are connected via non-reaction type interactions the inclusion_in_subnetwork attributes will be changed. Two possible options are available: "bidirectional" (up- and downstream neighbours) and "unidirectional" (only downstream neighbours)".
+    :param directionality_reaction: A string that determines which nodes that are connected via reaction type interactions will be included in the subnetwork.
+            If unidirectional is selected, only downstream nodes of the speciefied interaction type will be included."
+            The default setting is bidirectional.
+    :param directionality_other: A string that determines which nodes that are connected via non-reaction type interactions will be included in the subnetwork.
+            If unidirectional is selected, only downstream nodes of the speciefied interaction type will be included."
+            The default setting is bidirectional.
     :param path_inputfile_results_impact_analysis: path to the file that contains the results of the impact analysis.
         Format impact analysis table:
             Column 0: "NOI_id"
@@ -338,7 +342,7 @@ def cytoscape_node_table_nodeshortid_nodetype_extension_constructor(path_inputfi
 
 def cytoscape_node_table_general_extension_constructor(path_inputfile_network:str,reverse_interaction_doubled:bool,path_inputfile_node_annotations:str,column_index_ids_annotation_inputfile:int,output_directory_and_filename: str):
     """
-    This method will add a column containing network node ids to your annotation table .
+    This method will add a column containing network node ids to your annotation table. This table can then be used to extend the node table in cytoscape with the info in the annotation file.
     :param path_inputfile_network: The path to the input network file.
     :param reverse_interaction_doubled: If set to true, reversible reaction edges are contained in the network table in two directions (A to B, B to A).
     :param path_inputfile_node_annotations: The path to the input node annotations file.
