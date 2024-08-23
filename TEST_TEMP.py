@@ -1,19 +1,19 @@
-import pandas as pd
-import requests
-import time
-import io
-import xml.etree.ElementTree as ET
+from KEGG_network_construction import (KEGG_network_constructor_from_string,KEGG_organism_all_metabolic_pathway_retriever)
+from Impact_score_calculation import (general_node_impact_assessor)
 
+#testing -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+metabolic_pathways_pae = KEGG_organism_all_metabolic_pathway_retriever("pae")
+KEGG_network_constructor_from_string(metabolic_pathways_pae,"pae","reaction","C:/test/all_metabolic_reactions_pae_02072024.txt")
 
-network_table = pd.read_csv("C:/test/pae00010_reaction_pae_14052024.txt", sep="\t")
-print(network_table)
+# analyzing acetylomics wih metabolomics  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#14-1
+general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/14_1_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/14_1_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/14_1_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
+#LUZ19
+general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/LUZ19_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/LUZ19_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/LUZ19_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
+#PEV2
+general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PEV2_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PEV2_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/PEV2_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
+#PhiKZ
+general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PhiKZ_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PhiKZ_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/PhiKZ_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
+#YuA
+general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/YUA_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/YuA_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/YuA_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
 
-previous_nodes_id_reversible_KEGG_reactions = network_table.loc[(network_table["source_id"]=="PA1770_rn:R00199")&(network_table["interaction_info"]=="reversible"),]
-print(previous_nodes_id_reversible_KEGG_reactions)
-
-test_list = [['PA2275_rn:R00746', 'reaction', 'reversible'], ['PA2275_rn:R00746', 'reaction', 'reversible'], ['PA2275_rn:R00746', 'reaction', 'reversible'], ['PA2275_rn:R00746', 'reaction', 'reversible'], ['PA2275_rn:R00746', 'reaction', 'reversible']]
-test_list2 =[[1,3,5],[1,5,3],[1,3,5],[8,7,6]]
-unique_data = [list(x) for x in set(tuple(x) for x in test_list2)]
-
-print(test_list)
-print(unique_data)

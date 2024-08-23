@@ -651,7 +651,7 @@ def network_merger(path_inputfile_network_1:str,path_inputfile_network_2:str,con
             raise Exception("Please check the format of the input network tsv files. The first seven columns should be named: source_id,source_type,target_id,target_type,interaction_type,interaction_id,interaction_info.")
 
     # MERGE TWO NETWORKS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    # first add two datafames together
+    # first add two dataframes together
     network_merged_pd = pd.concat(network_1,network_2)
 
     # check for edges with same source and target node
@@ -780,12 +780,5 @@ def network_merger(path_inputfile_network_1:str,path_inputfile_network_2:str,con
     #write to output tsv file
     network_merged_pd.to_csv(output_directory_and_filename,sep="\t",index=False)
 
-#testing -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-metabolic_pathways_pae = KEGG_organism_all_metabolic_pathway_retriever("pae")
-
-KEGG_network_constructor_from_string(metabolic_pathways_pae,"pae","reaction","C:/test/all_metabolic_reactions_pae_02072024.txt")
 
 
-"""
-    This method uses the list provided by KEGG_pathway_list_decoder to look up the relevant in the KEGG database using the KEGG API.
-    During the course of this process,"""

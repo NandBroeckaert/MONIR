@@ -1360,20 +1360,4 @@ def general_node_impact_assessor(
         subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,total_extended_impact_analysis_table,"total_impact_score",start_weight_value,distance_level_limit,True,True,path_output_directory_and_filename+"_subnetwork")
 
 
-# analyzing acetylomics wih metabolomics  -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#14-1
-general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/14_1_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/14_1_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/14_1_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
-
-#LUZ19
-general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/LUZ19_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/LUZ19_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/LUZ19_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
-
-#PEV2
-general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PEV2_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PEV2_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/PEV2_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
-
-#PhiKZ
-general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PhiKZ_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/PhiKZ_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/PhiKZ_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
-
-#YuA
-general_node_impact_assessor("C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/KEGG_network_all_metabolic_reactions_pae_17052024.txt",False,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/YUA_MONIT_omics_format.txt','C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Input/formatted/YuA_MONIT_NOI_KEGG_format.txt','bidirectional','bidirectional',True,10.0,True,True,0.5,True,0.5,'C:/Nand_phd/data_en_analyse/WP3/Integration_acetylomics_metabolomics/Output/YuA_impact_NOI_acetylomcs_OMICS_metabolomics_v2.txt',10000)
-
 

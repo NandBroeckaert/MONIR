@@ -14,7 +14,7 @@ from Subnetwork_selector_for_visualisation import(
 def main():
     """
     Entry point of the program.
-    The commandline input will be run through the parser and the requested subcommand will be executed.
+    The commandline input will be given to the parser and the requested subcommand will be executed.
     """
     input = sys.argv[1:]
     parser = get_parser()
