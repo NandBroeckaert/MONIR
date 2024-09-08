@@ -11,15 +11,6 @@ from Subnetwork_selector_for_visualisation import(
     cytoscape_node_table_nodeshortid_nodetype_extension_constructor,
     cytoscape_node_table_general_extension_constructor)
 
-def main():
-    """
-    Entry point of the program.
-    The commandline input will be given to the parser and the requested subcommand will be executed.
-    """
-    input = sys.argv[1:]
-    parser = get_parser()
-    args = parser.parse_args(input)
-    execute_requested_subcommand(args)
 
 def execute_requested_subcommand(args):
     """
@@ -101,6 +92,18 @@ def execute_requested_subcommand(args):
             path_inputfile_node_annotations=args.path_inputfile_node_annotations,
             column_index_ids_annotation_inputfile=args.column_index_ids_annotation_inputfile,
             output_directory_and_filename=args.output_directory_and_filename)
+
+
+def main():
+    """
+    Entry point of the program.
+    The commandline input will be given to the parser and the requested subcommand will be executed.
+    """
+    input = sys.argv[1:]
+    parser = get_parser()
+    args = parser.parse_args(input)
+    execute_requested_subcommand(args)
+
 
 if __name__ == '__main__':
     main()
