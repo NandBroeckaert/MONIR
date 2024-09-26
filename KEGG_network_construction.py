@@ -4,6 +4,8 @@ import time
 import io
 import xml.etree.ElementTree as ET
 
+from numpy.fft import ifft2
+
 
 def KEGG_organism_pathway_retriever(KEGG_organism_code:str) -> list:
     """
@@ -235,7 +237,7 @@ def kgml_reader(path_to_pathway_kgml_file) -> list:
     return [entry_dict, genes_reaction_dict, relation_dict, reaction_dict]
 
 
-def network_builder(kgml_information_list:list,organism_code: str,selected_interaction_types: list, reverse_interaction_doubler: bool) -> pd.DataFrame:
+def network_builder(kgml_information_list:list,organism_code: str,selected_interaction_types: list) -> pd.DataFrame:
     """
     This method uses the dictionaries made by kgml_reader() to build a pandas dataframe that contains the information of a pathway in a network table format.
 
@@ -259,7 +261,6 @@ def network_builder(kgml_information_list:list,organism_code: str,selected_inter
         This network may contain the following types of interactions: chemical, reaction, ECrel, PPrel, GErel, PCrel
         note: chemical and reaction can not be selected together
         note: reaction and ECrel can not be selected together
-    :param reverse_interaction_doubler: if set to true, reversible reaction edges will be contained in the network table in two directions (A to B, B to A).
     :return: a pandas dataframe that contains all the network information.
         Format network dataframe:
             Column 0: source_id (str)
@@ -330,20 +331,10 @@ def network_builder(kgml_information_list:list,organism_code: str,selected_inter
                         network_source_types.append("compound")
                         network_target_ids.append(product)
                         network_target_types.append("compound")
-
                         network_interaction_types.append(reaction_type)
                         network_interaction_ids.append(reaction_id)
                         network_interaction_infos.append(reaction_info)
 
-                        if reaction_info == "reversible" and reverse_interaction_doubler:
-                            network_source_ids.append(product)
-                            network_source_types.append("compound")
-                            network_target_ids.append(substrate)
-                            network_target_types.append("compound")
-
-                            network_interaction_types.append(reaction_type)
-                            network_interaction_ids.append(reaction_id)
-                            network_interaction_infos.append(reaction_info)
 
             # NETWORK TYPE2: metabolic network (metabolites and enzymes:unique enzyme code per reaction)
             if "reaction" in selected_interaction_types:
@@ -358,14 +349,6 @@ def network_builder(kgml_information_list:list,organism_code: str,selected_inter
                         network_interaction_ids.append(reaction_id)
                         network_interaction_infos.append(reaction_info)
 
-                        if reaction_info == "reversible" and reverse_interaction_doubler:
-                            network_source_ids.append((gene + "_" + reaction).replace(organism_code+":", ""))
-                            network_source_types.append("gene")
-                            network_target_ids.append(substrate)
-                            network_target_types.append("compound")
-                            network_interaction_types.append(reaction_type)
-                            network_interaction_ids.append(reaction_id)
-                            network_interaction_infos.append(reaction_info)
 
                 for product in reaction_product_KEGG_ids:
                     for gene in reaction_enzyme_KEGG_ids:
@@ -377,14 +360,6 @@ def network_builder(kgml_information_list:list,organism_code: str,selected_inter
                         network_interaction_ids.append(reaction_id)
                         network_interaction_infos.append(reaction_info)
 
-                        if reaction_info == "reversible" and reverse_interaction_doubler:
-                            network_source_ids.append(product)
-                            network_source_types.append("compound")
-                            network_target_ids.append((gene + "_" + reaction).replace(organism_code+":", ""))
-                            network_target_types.append("gene")
-                            network_interaction_types.append(reaction_type)
-                            network_interaction_ids.append(reaction_id)
-                            network_interaction_infos.append(reaction_info)
 
     if "ECrel" in selected_interaction_types or "PPrel" in selected_interaction_types or "GErel" in selected_interaction_types or "PCrel" in selected_interaction_types:
         # incorporate relations
@@ -472,27 +447,33 @@ def short_gene_id_to_list_long_ids_dict_constructor(network_table: pd.DataFrame)
     :return: {key:short_gene_id (str),value: list_long_gene_ids (list)}
     """
     dict = {}
-    rows = network_table.shape[0]
-    for row in range(rows):
-        long_source_name = str(network_table.iloc[row,0])
-        source_type = str(network_table.iloc[row,1])
-        long_target_name = str(network_table.iloc[row,2])
-        target_type = str(network_table.iloc[row,3])
+    for index, row in network_table.iterrows():
+
+        long_source_name = row['source_id']
+        source_type = row['source_type']
+        long_target_name = row['target_id']
+        target_type = row['target_type']
 
         if source_type != "compound":
             short_source_name = long_source_name.split('_')[0]
             if short_source_name in dict:
                 set_long_ids = dict[short_source_name]
                 set_long_ids.add(long_source_name)
+                dict[short_source_name] = set_long_ids
             else:
-                dict[short_source_name]=set(long_source_name)
+                set_long_ids = set()
+                set_long_ids.add(long_source_name)
+                dict[short_source_name] = set_long_ids
         if target_type != "compound":
             short_target_name = long_target_name.split('_')[0]
             if short_target_name in dict:
                 set_long_ids = dict[short_target_name]
                 set_long_ids.add(long_target_name)
+                dict[short_target_name] = set_long_ids
             else:
-                dict[short_target_name]=set(long_target_name)
+                set_long_ids = set()
+                set_long_ids.add(long_target_name)
+                dict[short_target_name] = set_long_ids
 
     for key in dict.keys():
         set_long_ids = dict[key]
@@ -563,6 +544,115 @@ def identical_id_connection_extension_constructor(network_table: pd.DataFrame) -
 
     return identical_id_connection_network_table
 
+def KEGG_overlapping_reversible_irreversible_interaction_remover(network_table:pd.DataFrame):
+    """
+    KEGG sometimes defines the same interaction as reversible in one pathwaymap/kgml file and irreversible in another. In these cases, the reversible interaction should be kept in the network.
+    This method creates a new dataframe containing the network info in which these issues are resolved.
+    :param network_table: A pandas dataframe containing the network info.
+        Format:
+            0) source_id
+            1) source_type
+            2) target_id
+            3) target_type
+            4) interaction_type
+            5) interaction_id
+            6) interaction_info
+    :return: see method description
+    """
+
+    reversible_interactions = network_table[network_table['interaction_info'] == "reversible"].copy()
+    other_interactions = network_table[network_table['interaction_info']!="reversible"].copy()
+
+    for index, row in reversible_interactions.iterrows():
+        source_name = row['source_id']
+        target_name = row['target_id']
+        interaction_type = row['interaction_type']
+        interaction_id = row['interaction_id']
+
+
+        wrong_irreversible_interaction = other_interactions[(((other_interactions['source_id']==target_name) & (other_interactions['target_id']==source_name)) | ((other_interactions['source_id']==source_name)&(other_interactions['target_id']==target_name)))&
+                                                                            (other_interactions['interaction_type']==interaction_type) &
+                                                                            (other_interactions['interaction_id'] == interaction_id) &
+                                                                            (other_interactions['interaction_info']=="irreversible")]
+
+        index_wrong_irreversible_interaction = wrong_irreversible_interaction.index.values.tolist()
+        other_interactions.drop(index=index_wrong_irreversible_interaction,inplace=True)
+
+    cleaned_network = pd.concat([reversible_interactions,other_interactions],ignore_index=True)
+    return cleaned_network
+
+
+def doubled_reversible_interaction_remover(network:pd.DataFrame):
+    """
+    Reversible (reaction or chemical) type interactions can be stored in a network table either as:
+        one row/edge: A->B (with just the type variable indicating that it is part of a reversible reaction)
+        or as
+        two rows/edges: A->B and B->
+    This method returns a new network where all reversible interactions in the input network are stored as one edge (A->B).
+    Note: this method assumes that only reaction and chemical type interactions can be reversible
+    :param network: A pandas dataframe containing the network info.
+        Format:
+            0) source_id
+            1) source_type
+            2) target_id
+            3) target_type
+            4) interaction_type
+            5) interaction_id
+            6) interaction_info
+    :return: a new dataframe where all reversible interactions in the input network are stored as one edge (A->B).
+    """
+
+    reversible_interactions = network[network['interaction_info']=="reversible"]
+    cleaned_network = network[network['interaction_info']!="reversible"].copy()
+    included_list = []
+
+    for index, row in reversible_interactions.iterrows():
+        source_id = row['source_id']
+        target_id = row['target_id']
+        interaction_type = row['interaction_type']
+        interaction_id = row['interaction_id']
+
+        reversed_element = [target_id,source_id,interaction_type,interaction_id]
+
+        if reversed_element not in included_list:
+            source_type = row['source_type']
+            target_type = row['target_type']
+            new_row = [source_id,source_type,target_id,target_type,interaction_type,interaction_id,"reversible"]
+            extension_df = pd.DataFrame([new_row],columns=['source_id','source_type','target_id','target_type','interaction_type','interaction_id','interaction_info'])
+            cleaned_network = pd.concat([cleaned_network,extension_df],ignore_index = True)
+            element = [source_id, target_id,interaction_type,interaction_id]
+            included_list.append(element)
+
+    return cleaned_network
+
+
+def reversible_interaction_edge_doubler(network_table:pd.DataFrame):
+    """
+    This method doubles the reversible interaction networks. In other words, for a network in which reversible reaction interactions are stored in one edge (A->B), a second edge/row will be made (B->A).
+    Note: this method assumes that the network contains no doubled reversible reaction interactions!
+    :param network: network_table: a pandas dataframe that contains all the network information.
+        Format network dataframe:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are six possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
+    """
+    reversible_interactions = network_table[network_table['interaction_info']=="reversible"]
+    for index, row in reversible_interactions.iterrows():
+        source_name = row['source_id']
+        source_type = row['source_type']
+        target_name = row['target_id']
+        target_type = row['target_type']
+        interaction_type = row['interaction_type']
+        interaction_id = row['interaction_id']
+
+        new_row = [target_name,target_type,source_name,source_type,interaction_type,interaction_id,"reversible"]
+        extension_df = pd.DataFrame([new_row],columns=['source_id', 'source_type', 'target_id', 'target_type', 'interaction_type','interaction_id', 'interaction_info'])
+        network_table = pd.concat([network_table, extension_df], ignore_index=True)
+
 
 def KEGG_network_constructor_from_list(KEGG_pathways_list: list,organism_code: str,KEGG_interaction_types:list,path_outputfile: str, reverse_interaction_doubler: bool):
     """
@@ -606,22 +696,32 @@ def KEGG_network_constructor_from_list(KEGG_pathways_list: list,organism_code: s
         kgml_info_list = kgml_reader(pathway_xml)
 
         # make a pandas dataframe that contains the network information of the specified pathway
-        Pathway_network_table = network_builder(kgml_info_list,organism_code,KEGG_interaction_types,reverse_interaction_doubler)
+        Pathway_network_table = network_builder(kgml_info_list,organism_code,KEGG_interaction_types)
 
         # merge new pathway dataframe with the dataframe which is going to contain all pathway info
-        Total_network_table = pd.concat([Total_network_table,Pathway_network_table])
+        Total_network_table = pd.concat([Total_network_table,Pathway_network_table],ignore_index=True)
 
-    #remove duplicates (duplicate rows)
+    #cleanup
+    #-remove duplicates (duplicate rows)
     Total_network_table.drop_duplicates(inplace=True)
 
-    #Make a small network table for genes with variants of the same name (genename_reaction1, genename_reaction2,...) that should be connected.
-    identical_id_connection_network_table = identical_id_connection_extension_constructor(Total_network_table)
+    #-resolve issues like pathways that contain the same reaction in reverse or with different reaction info (one reversible, in other pathway irreversible)
+    Total_network_table_CLEAN1 = doubled_reversible_interaction_remover(Total_network_table)
+    Total_network_table_CLEAN2 = KEGG_overlapping_reversible_irreversible_interaction_remover(Total_network_table_CLEAN1)
 
-    #merge with total dataframe
-    Total_network_table = pd.concat([Total_network_table, identical_id_connection_network_table])
+    #double reversible type interactions if requested
+    if reverse_interaction_doubler:
+        reversible_interaction_edge_doubler(Total_network_table_CLEAN2)
+
+    #add connections between genes with variants of the same name
+    #- Make a small network table for genes with variants of the same name (genename_reaction1, genename_reaction2,...) that should be connected.
+    identical_id_connection_network_table = identical_id_connection_extension_constructor(Total_network_table_CLEAN2)
+
+    #- merge with total dataframe
+    Total_network_table_CLEAN_and_IdenticalID_connections = pd.concat([Total_network_table_CLEAN2, identical_id_connection_network_table])
 
     #writing pandas dataframe to tsv
-    Total_network_table.to_csv(path_outputfile,sep='\t',index=False)
+    Total_network_table_CLEAN_and_IdenticalID_connections.to_csv(path_outputfile,sep='\t',index=False)
 
 
 def KEGG_network_constructor_from_string(KEGG_pathways_string: str,organism_code: str,selected_KEGG_interaction_types_string: str,path_outputfile: str, reverse_interaction_doubler = False):
@@ -654,412 +754,195 @@ def KEGG_network_constructor_from_string(KEGG_pathways_string: str,organism_code
 
 
 
-def short_source_short_target_list_maker(row):
+def short_source_short_target_interaction_type_tuple_maker(row):
     """
-    Used together with the apply function to make a new column containing a list of the short source name and the short target name.
+    Used together with the apply function to make a new column containing a tuple of the short source name and the short target name.
     """
-    requested_list = row['source'].split('_')[0], row['target'].split('_')[0]
-    return requested_list
+    requested_tuple = (row['source_id'].split('_')[0], row['target_id'].split('_')[0], row['interaction_type'])
+    return requested_tuple
 
-def short_target_short_source_list_maker(row):
+
+def short_target_short_source_interaction_type_tuple_maker(row):
     """
-    Used together with the apply function to make a new column containing a list of the short target name and the short source name.
+    Used together with the apply function to make a new column containing a tuple of the short target name and the short source name.
     """
-    requested_list = row['target'].split('_')[0], row['source'].split('_')[0]
-    return requested_list
+    requested_tuple = (row['target_id'].split('_')[0], row['source_id'].split('_')[0], row['interaction_type'])
+    return requested_tuple
 
-def doubled_reversible_interaction_remover(network:pd.DataFrame):
-    """
-    Reversible reaction type interactions can be stored in a network table either as:
-        one row/edge: A->B (with just the the type variable indicating that it is part of a reversible reaction)
-        or as
-        two rows/edges: A->B and B->
-    This method returns a new network where all reversible reaction interactions in the input network are stored as one edge (A->B).
-    :param network: A pandas dataframe containing the network info.
-        Format:
-            0) source_id
-            1) source_type
-            2) target_id
-            3) target_type
-            4) interaction_type
-            5) interaction_id
-            6) interaction_info
-    """
 
-    reversible_reactions = network[(network['interaction_type']=="reaction") and (network['interaction_info']=="reversible")]
-    cleaned_network = network[(network['interaction_type']!="reaction") and (network['interaction_info']!="reversible")].copy()
-    included_idpairs = []
 
-    for index, row in reversible_reactions:
-        source_id = row['source_id']
-        target_id = row['target_id']
-
-        reversed_id_pair = [target_id,source_id]
-        if reversed_id_pair not in included_idpairs:
-            cleaned_network = cleaned_network.append(pd.DataFrame([new_row],columns=['source_id', 'source_type', 'target_id', 'target_type','interaction_type', 'interaction_id', 'interaction_info']),ignore_index=True)
-            included_idpairs.append([source_id,target_id])
-
-    return cleaned_network
-
-def doubled_reversible_interaction_adder(network:pd.DataFrame):
-    """
-    This method doubles the reversible interaction networks. In other words, for a network in which reversible reaction interactions are stored in one edge (A->B), a second edge/row will be made (B->A).
-    Note: this method assumes that the network contains no doubled reversible reaction interactions!
-    :param network: A pandas dataframe containing the network info.
-        Format:
-            0) source_id
-            1) source_type
-            2) target_id
-            3) target_type
-            4) interaction_type
-            5) interaction_id
-            6) interaction_info
-    """
-    reversible_reactions = network[(network['interaction_type']=="reaction") and (network['interaction_info']=="reversible")]
-    rows = reversible_reactions.shape[0]
-    for row in rows:
-        source_name = reversible_reactions.iloc[row,0]
-        source_type = reversible_reactions.iloc[row,1]
-        target_name = reversible_reactions.iloc[row,2]
-        target_type = reversible_reactions.iloc[row,3]
-        interaction_id = reversible_reactions.iloc[row,5]
-
-        new_row = [target_name,target_type,source_name,source_type,"reaction",interaction_id,"reversible"]
-        network = network.append(pd.DataFrame([new_row],columns=['source_id','source_type','target_id','target_type','interaction_type','interaction_id','interaction_info']),ignore_index=True)
-
-def network_merger(path_inputfile_network_1:str,path_inputfile_network_2:str,network2_reverse_interaction_doubled:bool,prioritized_network:int,merged_reverse_interaction_doubler:bool,output_directory_and_filename: str):
+#version 2
+def network_merger(path_inputfile_network_1: str, path_inputfile_network_2: str, prioritized_network: int,
+                   merged_reverse_interaction_doubler: bool, output_directory_and_filename: str):
     """
     This method merges two networks, and then returns a tsv file containing the merged network table in the specified location.
-        The first seven columns should be (in this order):
-            0) source_id
-            1) source_type
-            2) target_id
-            3) target_type
-            4) interaction_type
-            5) interaction_id
-            6) interaction_info
-    This method assumes that if you have multiple id that are near identical, they are connected via a short variant of that gene id using identical_id_connections (interacion type).
+        Note: Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. It can also NOT BE USED as input for the impact analysis.
+        Note: It is assumed that the same ids in the two networks are the same type of node.
+
+        Format merged network tsv file:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are seven possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel,identical_id_connection)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
+
+    :param path_inputfile_network_1: The path to the first input network file (string).
+        Format network tsv file:
+            Column 0: source_id (str)
+            Column 1: source_type (str)
+            Column 2: target_id (str)
+            Column 3: target_type (str)
+            Column 4: interaction_type (str) (Note: there are seven possible interaction types:chemical,reaction,ECrel,PPrel,GErel,PCrel,identical_id_connection)
+            Column 5: interaction_id (str) (Note: only if present)
+            Column 6: interaction_info (str) (e.g. reversible,irreversible,..   see KEGG KGML webpage for more info about futher details about the possible interaction types)
+    :param path_inputfile_network_2: The path to the second input network file (string). Same format as network1.
+    :param prioritized_network: An integer that determines which identifiers will be used in the merged network for edges/rows that are present in both input networks. Two options: 1 or 2.
+    :param output_directory_and_filename: path to the output file (includes file name) (e.g. C:/test/all_metabolic_reactions_pae.txt)
     """
 
     # INPUT VALIDATON --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    #read tsv files containing the two networks
-    network_1 = pd.read_csv(path_inputfile_network_1,sep="\t")
+    # read tsv files containing the two networks
+    network_1 = pd.read_csv(path_inputfile_network_1, sep="\t")
     network_2 = pd.read_csv(path_inputfile_network_2, sep="\t")
 
-    #check format of first seven columns
-    required_column_names = ["source_id","source_type","target_id","target_type","interaction_type","interaction_id","interaction_info"]
+    # check format of first seven columns
+    required_column_names = ["source_id", "source_type", "target_id", "target_type", "interaction_type",
+                             "interaction_id", "interaction_info"]
 
     network_1_column_names = list(network_1.columns)
     network_2_column_names = list(network_2.columns)
     for index in range(7):
-        if network_1_column_names[index] != required_column_names[index] or network_2_column_names[index] != required_column_names[index]:
+        if network_1_column_names[index] != required_column_names[index] or network_2_column_names[index] != \
+                required_column_names[index]:
             raise Exception("Please check the format of the input network tsv files. The first seven columns should be named: source_id,source_type,target_id,target_type,interaction_type,interaction_id,interaction_info.")
 
-    #cannot combine reaction, chemical and ECrel networks
-    #doens't check types of nodes
+        # MERGE TWO NETWORKS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        # delete all identical_id_connection (IIC) type interactions
+        subset_network_1_no_ICC = network_1[network_1['interaction_type'] != 'identical_id_connection']
+        subset_network_2_no_ICC = network_2[network_2['interaction_type'] != 'identical_id_connection']
 
+        #remove all doubled reversible interactions in the two networks
+        subset_network_1_no_ICC = doubled_reversible_interaction_remover(subset_network_1_no_ICC)
+        subset_network_2_no_ICC = doubled_reversible_interaction_remover(subset_network_2_no_ICC)
 
-    # MERGE TWO NETWORKS ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    # delete all identical_id_connection type interactions
-        subset_network_1_no_identical_id_connection = network_1[network_1['interaction_type'] != 'identical_id_connection']
-        subset_network_2_no_identical_id_connection = network_2[network_2['interaction_type'] != 'identical_id_connection']
-    # merging subsets that contain info on non-reaction interactions
-        subset_network_1_no_identical_id_connection_only_non_reactions = subset_network_1_no_identical_id_connection[subset_network_1_no_identical_id_connection['interaction_type'] != 'reaction']
-        subset_network_2_no_identical_id_connection_only_non_reactions = subset_network_2_no_identical_id_connection[subset_network_2_no_identical_id_connection['interaction_type'] != 'reaction']
+        # Make subsets that contain info on non-reaction interactions
+        subset_network_1_no_ICC_reaction_chemcial = subset_network_1_no_ICC[(subset_network_1_no_ICC['interaction_type'] != 'reaction') & (subset_network_1_no_ICC['interaction_type'] != 'chemical')]
+        subset_network_2_no_ICC_reaction_chemcial = subset_network_2_no_ICC[(subset_network_2_no_ICC['interaction_type'] != 'reaction') & (subset_network_2_no_ICC['interaction_type'] != 'chemical')]
 
-        #network_merged_no_identical_id_connection_only_non_reactions = pd.concat([subset_network_1_no_identical_id_connection_only_non_reactions,subset_network_2_no_identical_id_connection_only_non_reactions])
-        #network_merged_no_identical_id_connection_only_non_reactions.drop_duplicates(inplace=True)
-    # merging reaction type interactions
+        # merging reaction and chemical type interactions
         # make subset of networks containing reaction info
-        subset_network_1_no_identical_id_connection_only_reactions = subset_network_1_no_identical_id_connection[subset_network_1_no_identical_id_connection['interaction_type'] == 'reaction'].copy()
-        subset_network_2_no_identical_id_connection_only_reactions = subset_network_2_no_identical_id_connection[subset_network_2_no_identical_id_connection['interaction_type'] == 'reaction'].copy()
+        subset_network_1_no_ICC_yes_reaction_chemical = subset_network_1_no_ICC[(subset_network_1_no_ICC['interaction_type'] == 'reaction') | (subset_network_1_no_ICC['interaction_type'] == 'chemical')].copy()
+        subset_network_2_no_ICC_yes_reaction_chemical = subset_network_2_no_ICC[(subset_network_2_no_ICC['interaction_type'] == 'reaction') | (subset_network_2_no_ICC['interaction_type'] == 'chemical')].copy()
 
         # add [short_source_name, short_target_name] and [short_source_name, short_target_name]
-        subset_network_1_no_identical_id_connection_only_reactions['s_source_s_target'] = subset_network_1_no_identical_id_connection_only_reactions.apply(short_source_short_target_list_maker, axis=1)
-        subset_network_2_no_identical_id_connection_only_reactions['s_source_s_target'] = subset_network_2_no_identical_id_connection_only_reactions.apply(short_source_short_target_list_maker,axis=1)
-        subset_network_2_no_identical_id_connection_only_reactions['s_target_s_source'] = subset_network_2_no_identical_id_connection_only_reactions.apply(short_target_short_source_list_maker, axis=1)
+        subset_network_1_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'] = subset_network_1_no_ICC_yes_reaction_chemical.apply(short_source_short_target_interaction_type_tuple_maker, axis=1)
+        subset_network_1_no_ICC_yes_reaction_chemical['s_target_s_source_interaction_type'] = subset_network_1_no_ICC_yes_reaction_chemical.apply(short_target_short_source_interaction_type_tuple_maker, axis=1)
+        subset_network_2_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'] = subset_network_2_no_ICC_yes_reaction_chemical.apply(short_source_short_target_interaction_type_tuple_maker, axis=1)
+        subset_network_2_no_ICC_yes_reaction_chemical['s_target_s_source_interaction_type'] = subset_network_2_no_ICC_yes_reaction_chemical.apply(short_target_short_source_interaction_type_tuple_maker, axis=1)
 
         # make a list of all the source target pairs in the first reaction network
-        list_short_source_target_pairs_to_be_checked = subset_network_1_no_identical_id_connection_only_reactions['s_source_s_target'].tolist()
+        list_short_source_target_pairs_interaction_type_network1_reaction_chemical = subset_network_1_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'].tolist()
+        list_short_source_target_pairs_interaction_type_network2_reaction_chemical = subset_network_2_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'].tolist()
 
-        for s_source_s_target_pair in list_short_source_target_pairs_to_be_checked:
+        #create subset of networks that don't overlap for reaction and chemical type interactions
+        subset_network_1_no_ICC_yes_reaction_chemical_non_overlapping = subset_network_1_no_ICC_yes_reaction_chemical[(~subset_network_1_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'].isin(list_short_source_target_pairs_interaction_type_network2_reaction_chemical))&(~subset_network_1_no_ICC_yes_reaction_chemical['s_target_s_source_interaction_type'].isin(list_short_source_target_pairs_interaction_type_network2_reaction_chemical))].copy()
+        subset_network_2_no_ICC_yes_reaction_chemical_non_overlapping = subset_network_2_no_ICC_yes_reaction_chemical[(~subset_network_2_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'].isin(list_short_source_target_pairs_interaction_type_network1_reaction_chemical))&(~subset_network_2_no_ICC_yes_reaction_chemical['s_target_s_source_interaction_type'].isin(list_short_source_target_pairs_interaction_type_network1_reaction_chemical))].copy()
 
-            index_match_network_1_forward = subset_network_1_no_identical_id_connection_only_reactions.index[subset_network_1_no_identical_id_connection_only_reactions['s_source_s_target']==s_source_s_target_pair]
-            index_match_network_2_forward = subset_network_2_no_identical_id_connection_only_reactions.index[subset_network_2_no_identical_id_connection_only_reactions['s_source_s_target']==s_source_s_target_pair]
-            index_match_network_2_reverse = subset_network_2_no_identical_id_connection_only_reactions.index[subset_network_2_no_identical_id_connection_only_reactions['s_target_s_source']==s_source_s_target_pair]
+        #remove columns
+        subset_network_1_no_ICC_yes_reaction_chemical_non_overlapping.drop("s_source_s_target_interaction_type",axis=1,inplace=True)
+        subset_network_1_no_ICC_yes_reaction_chemical_non_overlapping.drop("s_target_s_source_interaction_type", axis=1, inplace=True)
+        subset_network_2_no_ICC_yes_reaction_chemical_non_overlapping.drop("s_source_s_target_interaction_type", axis=1, inplace=True)
+        subset_network_2_no_ICC_yes_reaction_chemical_non_overlapping.drop("s_target_s_source_interaction_type", axis=1, inplace=True)
 
-            n_matches_network_1_forward = len(index_match_network_1_forward)
-            n_matches_network_2_forward = len(index_match_network_2_forward)
-            n_matches_network_2_reverse = len(index_match_network_2_reverse)
+        #retain the requested version of the overlapping reaction and chemical interactions
+        for s_source_s_target_pair_interaction_type in list_short_source_target_pairs_interaction_type_network1_reaction_chemical:
+
+            match_network_1_forward = subset_network_1_no_ICC_yes_reaction_chemical[subset_network_1_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'] == s_source_s_target_pair_interaction_type]
+            match_network_2_forward = subset_network_2_no_ICC_yes_reaction_chemical[subset_network_2_no_ICC_yes_reaction_chemical['s_source_s_target_interaction_type'] == s_source_s_target_pair_interaction_type]
+            match_network_2_reverse = subset_network_2_no_ICC_yes_reaction_chemical[subset_network_2_no_ICC_yes_reaction_chemical['s_target_s_source_interaction_type'] == s_source_s_target_pair_interaction_type]
+            n_matches_network_1_forward = match_network_1_forward.shape[0]
+            n_matches_network_2_forward = match_network_2_forward.shape[0]
+            n_matches_network_2_reverse = match_network_2_reverse.shape[0]
 
             # safety check --> only one edge for this couple. Can't have multiple reactions between the same nodes
-            if (n_matches_network_1_forward>1) or (n_matches_network_2_forward>1) or (n_matches_network_2_reverse>1):
+            if (n_matches_network_1_forward > 1) or (n_matches_network_2_forward > 1) or (n_matches_network_2_reverse > 1):
                 raise Exception("Error. A network contains multiple reaction type connections between a pair of nodes. Only one per pair is allowed.")
 
-            # check whether source target couple is in both networks. If so:
-            # (i) determine priority names
-            # (ii) make changes to reaction subnetwork 1 and remove needed rows in reaction subnetwork 2
+            # check whether source target couple is in both networks.
             matched = False
-            reverse_matched = False
-            if (n_matches_network_1_forward == 1) and (n_matches_network_2_forward == 1): #both networks describe the edge in the same direction
-                matched = True
-                if prioritized_network == 1:
-                    prioritized_l_source = subset_network_1_no_identical_id_connection_only_reactions.iloc[index_match_network_1_forward[0],0]
-                    prioritized_l_target = subset_network_1_no_identical_id_connection_only_reactions.iloc[index_match_network_1_forward[0], 2]
-                else:
-                    prioritized_l_source = subset_network_2_no_identical_id_connection_only_reactions.iloc[index_match_network_2_forward[0],0]
-                    prioritized_l_target = subset_network_2_no_identical_id_connection_only_reactions.iloc[index_match_network_2_forward[0], 2]
+            direct_match = False
 
+            prioritized_l_source = match_network_1_forward.iloc[0, 0]
+            prioritized_source_type = match_network_1_forward.iloc[0, 1]
+            prioritized_l_target = match_network_1_forward.iloc[0, 2]
+            prioritized_target_type = match_network_1_forward.iloc[0, 3]
+            prioritized_interaction_id = match_network_1_forward.iloc[0, 5]
+            interaction_type = s_source_s_target_pair_interaction_type[2]
+
+            if (n_matches_network_1_forward == 1) and (n_matches_network_2_forward == 1):  # both networks describe the edge in the same direction
+                direct_match = True
+                matched = True
+                if prioritized_network == 2:
+                    prioritized_l_source = match_network_2_forward.iloc[0, 0]
+                    prioritized_source_type = match_network_2_forward.iloc[0, 1]
+                    prioritized_l_target = match_network_2_forward.iloc[0, 2]
+                    prioritized_target_type = match_network_2_forward.iloc[0, 3]
+                    prioritized_interaction_id = match_network_2_forward.iloc[0, 5]
             else:
                 if (n_matches_network_1_forward == 1) and (n_matches_network_2_reverse == 1):  # the same edge is described in the opposite direction
                     matched = True
-                    if prioritized_network == 1:
-                        prioritized_l_source = subset_network_1_no_identical_id_connection_only_reactions.iloc[index_match_network_1_forward[0], 0]
-                        prioritized_l_target = subset_network_1_no_identical_id_connection_only_reactions.iloc[index_match_network_1_forward[0], 2]
-                    else:
-                        prioritized_l_source = subset_network_2_no_identical_id_connection_only_reactions.iloc[index_match_network_2_forward[0], 2]
-                        prioritized_l_target = subset_network_2_no_identical_id_connection_only_reactions.iloc[index_match_network_2_forward[0], 0]
+                    if prioritized_network == 2:
+                        prioritized_l_target = match_network_2_reverse.iloc[0, 0]
+                        prioritized_target_type = match_network_2_reverse.iloc[0, 1]
+                        prioritized_l_source = match_network_2_reverse.iloc[0, 2]
+                        prioritized_source_type = match_network_2_reverse.iloc[0, 3]
+                        prioritized_interaction_id = match_network_2_forward.iloc[0, 5]
 
             if matched:
-                n1_interaction_info = subset_network_1_no_identical_id_connection_only_reactions.iloc[index_match_network_1_forward[0],6]
-                n2_interaction_info = subset_network_2_no_identical_id_connection_only_reactions.iloc[index_match_network_2_forward[0],6]
+                n1_interaction_info = match_network_1_forward.iloc[0, 6]
 
-                subset_network_1_no_identical_id_connection_only_reactions.at[index_match_network_1_forward[0], 0] = prioritized_l_source
-                subset_network_1_no_identical_id_connection_only_reactions.at[index_match_network_1_forward[0], 2] = prioritized_l_target
-
-                #if one network describes the iteraction as reversible and the otherone as irreversible
-                if ((n1_interaction_info == "reversible") and (n2_interaction_info == "irreversible")) or (n1_interaction_info == "irreversible") and (n2_interaction_info == "reversible"):
-                    subset_network_1_no_identical_id_connection_only_reactions.at[index_match_network_1_forward[0], 6] = "reversible"
-
-                #remove unwanted row in network1
-                if reverse_matched:
-                    subset_network_2_no_identical_id_connection_only_reactions.drop(index=index_match_network_2_reverse,inplace=True)
+                if direct_match:
+                    n2_interaction_info = match_network_2_forward.iloc[0, 6]
                 else:
-                    subset_network_2_no_identical_id_connection_only_reactions.drop(index=index_match_network_2_forward,inplace=True)
+                    n2_interaction_info = match_network_2_reverse.iloc[0, 6]
 
-                #if network 2 == doubled
-                if network2_reverse_interaction_doubled:
-                    subset_network_2_no_identical_id_connection_only_reactions.drop(index=index_match_network_2_reverse,inplace=True)
+                print(n1_interaction_info)
+                print(n2_interaction_info)
 
-        #drop special columns
-        subset_network_1_no_identical_id_connection_only_reactions.drop("s_source_s_target",axis=1,inplace=True)
-        subset_network_2_no_identical_id_connection_only_reactions.drop("s_source_s_target", axis=1, inplace=True)
-        subset_network_2_no_identical_id_connection_only_reactions.drop("s_target_s_source", axis=1, inplace=True)
+                interaction_info = 'irreversible'
+                if ((n1_interaction_info == "reversible") or (n2_interaction_info == "reversible")):
+                    interaction_info = "reversible"
 
-    #create network containing all the non-reaction and reaction type interactions (excluding identical_id_connection type interactions)
-    merged_network_reaction_non_reaction = pd.concat([subset_network_1_no_identical_id_connection_only_non_reactions,subset_network_2_no_identical_id_connection_only_non_reactions,subset_network_1_no_identical_id_connection_only_reactions,subset_network_2_no_identical_id_connection_only_reactions],ignore_index=True)
+                print(interaction_info)
+
+                new_row = [prioritized_l_source,prioritized_source_type,prioritized_l_target,prioritized_target_type,interaction_type,prioritized_interaction_id,interaction_info]
+                print(new_row)
+                extension_df = pd.DataFrame([new_row], columns=['source_id', 'source_type', 'target_id', 'target_type','interaction_type', 'interaction_id','interaction_info'])
+                subset_network_1_no_ICC_yes_reaction_chemical_non_overlapping = pd.concat([subset_network_1_no_ICC_yes_reaction_chemical_non_overlapping, extension_df], ignore_index=True)
+
+        # drop special columns
+
+
+    # create network containing all the non-reaction and reaction type interactions (excluding identical_id_connection type interactions)
+    merged_network_reaction_non_reaction = pd.concat([subset_network_1_no_ICC_reaction_chemcial,
+                                                      subset_network_2_no_ICC_reaction_chemcial,
+                                                      subset_network_1_no_ICC_yes_reaction_chemical_non_overlapping,
+                                                      subset_network_2_no_ICC_yes_reaction_chemical_non_overlapping],
+                                                     ignore_index=True)
     merged_network_reaction_non_reaction.drop_duplicates(inplace=True)
 
-    #create a dataframe containing all the identical_id_connection type interactions
-    identical_id_connection_network_table = identical_id_connection_extension_constructor(merged_network_reaction_non_reaction)
+    # create a dataframe containing all the identical_id_connection type interactions
+    identical_id_connection_network_table = identical_id_connection_extension_constructor(
+        merged_network_reaction_non_reaction)
 
-    #merge all subset to create the merged dataframe containing reaction, non-reaction and
-    total_merged_network_table = pd.concat([merged_network_reaction_non_reaction,identical_id_connection_network_table],ignore_index=True)
-    total_merged_network_table.drop_duplicates(inplace=True)
+    # merge all subset to create the merged dataframe containing reaction, non-reaction and
+    total_merged_network_table = pd.concat([merged_network_reaction_non_reaction, identical_id_connection_network_table], ignore_index=True)
 
-    #data cleanup regarding reversible reaction type interactions
-    cleaned_total_merged_network = doubled_reversible_interaction_remover(total_merged_network_table)
-    #option: double reversible reactions in network table (A->B and B->A, instead of only A->B)
+    # option: double reversible interaction edges in network table (A->B and B->A, instead of only A->B)
     if merged_reverse_interaction_doubler:
-        doubled_reversible_interaction_adder(cleaned_total_merged_network)
+        reversible_interaction_edge_doubler(total_merged_network_table)
 
-    #write to output tsv file
-    cleaned_total_merged_network.to_csv(output_directory_and_filename, sep='\t', index=False)
-
-
-
-
-
-#random storage
-"""
-#we will make a small dataframe containing these identical_id_connections
-network_source_ids = []
-network_source_types = []
-network_target_ids = []
-network_target_types = []
-network_interaction_types = []
-network_interaction_ids = []
-network_interaction_infos = []
-
-
-rows = Total_network_table.shape[0]
-reaction_genes_extended_name_set = set()
-relation_genes_short_name_set = set()
-for row in range(rows):
-    # make list of all genes in reactions (format id: name_reactionid)
-    source_name = str(Total_network_table.iloc[row,0])
-    source_type = str(Total_network_table.iloc[row,1])
-    target_name = str(Total_network_table.iloc[row,2])
-    target_type = str(Total_network_table.iloc[row,3])
-    interaction_type = Total_network_table.iloc[row,4]
-    if interaction_type == "reaction":
-        if source_type != "compound":
-            reaction_genes_extended_name_set.add(source_name)
-        if target_type != "compound":
-            reaction_genes_extended_name_set.add(target_name)
-
-    # make list of all genes in relations (format id: name)
-    if (interaction_type != "reaction") and (interaction_type != "chemical"):
-        if source_type != "compound":
-            relation_genes_short_name_set.add(source_name)
-        if target_type != "compound":
-            relation_genes_short_name_set.add(target_name)
-
-
-reaction_genes_extended_name_list = list(reaction_genes_extended_name_set)
-reaction_genes_short_name_list = [extended_name.split("_")[0] for extended_name in reaction_genes_extended_name_list]
-
-# genes for which we have to make a connection between a node in a relation
-genes_part_of_relation_and_reaction_interactions_to_be_selfconnected_list = list(set(reaction_genes_short_name_list).intersection(relation_genes_short_name_set))
-
-# genes that have to be checked for name variants within reaction interactions
-genes_that_have_to_checked_for_indentical_variant_names = list(set(reaction_genes_short_name_list)-relation_genes_short_name_set)
-
-# We will first connect genes of the relation interactions with name variants part of reaction interactions
-# the genes in the reaction network are now still unconnected to the genes in the relation networks, due to the gene names in the reaction network being formatted as (genename_reactionid)
-if ("reaction" in KEGG_interaction_types) and ("ECrel" in KEGG_interaction_types or "PPrel" in KEGG_interaction_types or "GErel" in KEGG_interaction_types or "PCrel" in KEGG_interaction_types):
-    #make the connections
-    for gene_short in genes_part_of_relation_and_reaction_interactions_to_be_selfconnected_list:
-        for gene_extended in reaction_genes_extended_name_list:
-            if gene_short == gene_extended.split('_')[0]:
-                #define edge from short to extended id
-                network_source_ids.append(gene_short)
-                network_source_types.append("gene")
-                network_target_ids.append(gene_extended)
-                network_target_types.append("gene")
-                network_interaction_types.append("identical_id_connection")
-                network_interaction_ids.append("NA")
-                network_interaction_infos.append("NA")
-
-# Add identical_id_connection between genes in the reaction network that aren't linked through nodes from the relation networks
-for gene_short_reaction_name in genes_that_have_to_checked_for_indentical_variant_names:
-    for gene_extended_reaction_name in reaction_genes_extended_name_list:
-        if (reaction_genes_short_name_list.count(gene_short_reaction_name) > 1) and (gene_extended_reaction_name.split('_')[0] == gene_short_reaction_name):
-            # define edge from short to extended id
-            network_source_ids.append(gene_short_reaction_name)
-            network_source_types.append("gene")
-            network_target_ids.append(gene_extended_reaction_name)
-            network_target_types.append("gene")
-            network_interaction_types.append("identical_id_connection")
-            network_interaction_ids.append("NA")
-            network_interaction_infos.append("NA")
-
-
-#make dataframe
-identical_id_connection_network_dict = {"source_id": network_source_ids, "source_type": network_source_types,
-                        "target_id": network_target_ids, "target_type": network_target_types,
-                        "interaction_type": network_interaction_types,
-                        "interaction_id": network_interaction_ids,
-                        "interaction_info": network_interaction_infos}
-identical_id_connection_network_table = pd.DataFrame.from_dict(identical_id_connection_network_dict)
-
-#remove duplicate rows
-identical_id_connection_network_table.drop_duplicates(inplace=True)
-"""
-
-
-"""
-
-
-        # make list of all long gene ids in network 1
-        genes_network1_sources_long_id_list = network_1.loc[(network_1['source_type'] == "gene") or (network_1['source_type'] == 'group_gene'), "source_id"]
-        genes_network1_targets_long_id_list = network_1.loc[(network_1['target_type'] == "gene") or (network_1['target_type'] == 'group_gene'), "target_id"]
-        genes_network1_long_id_set = set(genes_network1_sources_long_id_list + genes_network1_targets_long_id_list)
-        genes_network1_long_id_list = list(genes_network1_long_id_set)
-
-        # make list of all genes in network 2
-        genes_network2_sources_long_id_list = network_2.loc[(network_2['source_type'] == "gene") or (network_2['source_type'] == 'group_gene'), "source_id"]
-        genes_network2_targets_long_id_list = network_2.loc[(network_2['target_type'] == "gene") or (network_2['target_type'] == 'group_gene'), "target_id"]
-        genes_network2_long_id_set = set(genes_network2_sources_long_id_list + genes_network2_targets_long_id_list)
-        genes_network2_long_id_list = list(genes_network2_long_id_set)
-
-        #make dict of short id to all long ids in network 1
-        genes_network1_short_to_long_id_dict = {}
-
-        for long_id in genes_network1_long_id_list:
-            short_id = long_id.split('_')[0]
-            if short_id not in genes_network1_short_to_long_id_dict:
-                genes_network1_short_to_long_id_dict[short_id] = [long_id]
-            else:
-                list_long_ids = genes_network1_short_to_long_id_dict[short_id]
-                list_long_ids.append(long_id)
-                genes_network1_short_to_long_id_dict[short_id] = list_long_ids
-
-        #make dict of short id to all long ids in network 2
-        genes_network2_short_to_long_id_dict = {}
-
-        for long_id in genes_network2_long_id_list:
-            short_id = long_id.split('_')[0]
-            if short_id not in genes_network2_short_to_long_id_dict:
-                genes_network2_short_to_long_id_dict[short_id] = [long_id]
-            else:
-                list_long_ids = genes_network2_short_to_long_id_dict[short_id]
-                list_long_ids.append(long_id)
-                genes_network2_short_to_long_id_dict[short_id] = list_long_ids
-
-        #make list for which we need to make connections
-        network1_short_ids_set = set(genes_network1_short_to_long_id_dict.keys())
-        network2_short_ids_set = set(genes_network2_short_to_long_id_dict.keys())
-        overlapping_short_ids_set = network1_short_ids_set.intersection(network2_short_ids_set) #this still contains ids that match exactly between the networks
-
-        #make list of ids that match exactly between the networks
-        genes_network1_long_id_set = set(genes_network1_long_id_list)
-        genes_network2_long_id_set = set(genes_network2_long_id_list)
-        overlapping_long_ids_set = genes_network1_long_id_set.intersection(genes_network2_long_id_set)
-        overlapping_long_ids_list = list(overlapping_long_ids_set)
-        overlapping_exact_long_id_matches_short_ids_list =  [x.split('_')[0] for x in overlapping_long_ids_list]
-        overlapping_exact_long_id_matches_short_ids_set = set(overlapping_exact_long_id_matches_short_ids_list)
-
-        #remove genes ids that match exactly between the networks
-        overlapping_short_ids_removed_exact_matches_set = overlapping_short_ids_set - overlapping_exact_long_id_matches_short_ids_set
-        overlapping_short_ids_removed_exact_matches_list = list(overlapping_short_ids_removed_exact_matches_set)
-
-        #make connections
-        # we will make a small dataframe containing these identical_id_connections
-        network_source_ids = []
-        network_source_types = []
-        network_target_ids = []
-        network_target_types = []
-        network_interaction_types = []
-        network_interaction_ids = []
-        network_interaction_infos = []
-
-        for short_id in overlapping_short_ids_removed_exact_matches_list:
-            connection_code = 0 #0: connect both networks to short new node|1: connect nodes in network 2 to short name that is already in network 1|2: connect nodes in network 1 to short name that is already in network 2
-
-            if short_id in genes_network1_short_to_long_id_dict[short_id]: #if the short version of an id is already in network 1 or 2, than
-                connection_code = 1
-            else:
-                if short_id in genes_network2_short_to_long_id_dict[short_id]:
-                    connection_code = 2
-
-            if ((connection_code == 1) or (connection_code == 0)):
-                for network2_id in genes_network2_short_to_long_id_dict[short_id]:
-                    network_source_ids.append(short_id)
-                    network_source_types.append("gene")
-                    network_target_ids.append(network2_id)
-                    network_target_types.append("gene")
-                    network_interaction_types.append("identical_id_connection")
-                    network_interaction_ids.append("NA")
-                    network_interaction_infos.append("NA")
-
-            if ((connection_code == 2) or (connection_code == 0)):
-                for network1_id in genes_network1_short_to_long_id_dict[short_id]:
-                    network_source_ids.append(short_id)
-                    network_source_types.append("gene")
-                    network_target_ids.append(network1_id)
-                    network_target_types.append("gene")
-                    network_interaction_types.append("identical_id_connection")
-                    network_interaction_ids.append("NA")
-                    network_interaction_infos.append("NA")
-
-    # make dataframe that contains all identical id connections
-    identical_id_connection_network_dict = {"source_id": network_source_ids,
-                                                    "source_type": network_source_types,
-                                                    "target_id": network_target_ids,
-                                                    "target_type": network_target_types,
-                                                    "interaction_type": network_interaction_types,
-                                                    "interaction_id": network_interaction_ids,
-                                                    "interaction_info": network_interaction_infos}
-    identical_id_connection_network_table = pd.DataFrame.from_dict(identical_id_connection_network_dict)
-"""
+    # write to output tsv file
+    total_merged_network_table.to_csv(output_directory_and_filename, sep='\t', index=False)

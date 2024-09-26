@@ -41,7 +41,13 @@ def execute_requested_subcommand(args):
 
     elif args.subcommand == "network_merger":
         print("Merging the two specified networks.")
-        network_merger()
+        network_merger(
+            path_inputfile_network_1 = args.path_inputfile_network1,
+            path_inputfile_network_2 = args.path_inputfile_network2,
+            prioritized_network = args.prioritized_network,
+            merged_reverse_interaction_doubler = args.reverse_interaction_doubler,
+            output_directory_and_filename = args.path_output_directory_and_filename,
+        )
 
     elif args.subcommand == "node_impact_assessor":
         print("Performing the impact analysis for the requested nodes.")

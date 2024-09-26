@@ -1,10 +1,11 @@
 import pandas as pd
-from Impact_score_calculation import network_table_reader
-from Impact_score_calculation import Node
-from Impact_score_calculation import node_level_resetter
-from Impact_score_calculation import node_inclusion_in_subnetwork_resetter
-from Impact_score_calculation import direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor
-from Impact_score_calculation import find_similar_network_node_id
+from Impact_score_calculation import (
+    network_table_reader,
+    Node,
+    node_level_resetter,
+    node_inclusion_in_subnetwork_resetter,
+    direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor,
+    find_similar_network_node_id)
 
 def subnetwork_inclusion_initiator(input_node:Node,network_node_objects_dict: dict,directionality_reaction:str,directionality_other:str):
     """
@@ -206,12 +207,11 @@ def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inp
     network_node_dict = network_table_reader(path_inputfile_network,reverse_interaction_doubled)
 
     #create subnetwork for each node of interest that scored above the impact threshold
-    rows = results_impact_analysis_pd.shape[0]
-    for row in range(rows):
-        NOI_network_id = results_impact_analysis_pd.iloc[rows,1]
-        total_impact_score = results_impact_analysis_pd.iloc[rows,2]
-        topological_independent_total_impact_score = results_impact_analysis_pd.iloc[rows,4]
-        contributing_nodes_max_level = results_impact_analysis_pd.iloc[rows,7]
+    for index, row in results_impact_analysis_pd.iterrows():
+        NOI_network_id = row['NOI_network_id']
+        total_impact_score = row['total_impact_score']
+        topological_independent_total_impact_score = row['topological_independent_total_impact_score']
+        contributing_nodes_max_level = row['contributing_nodes_max_level']
 
         if distance_level_limit_based_on_impact_results:
             distance_level_limit = contributing_nodes_max_level
@@ -259,7 +259,7 @@ def subnetwork_table_constructor(path_inputfile_network:str,reverse_interaction_
             Column 6: "interaction_info"
     :param reverse_interaction_doubled: If set to true, reversible reaction edges are contained in the network table in two directions (A to B, B to A).
     :param directionality_reaction: A string that determines which nodes that are connected via reaction type interactions will be included in the subnetwork.
-            If unidirectional is selected, only downstream nodes of the speciefied interaction type will be included."
+            If unidirectional is selected, only downstream nodes of the specified interaction type will be included."
             The default setting is bidirectional.
     :param directionality_other: A string that determines which nodes that are connected via non-reaction type interactions will be included in the subnetwork.
             If unidirectional is selected, only downstream nodes of the speciefied interaction type will be included."
@@ -321,7 +321,7 @@ def cytoscape_node_table_nodeshortid_nodetype_extension_constructor(path_inputfi
     #MAKING THE NODE TABLE EXTENSION (TYPE) ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     sources_set = set(list(network["source_id"]))
     target_set = set(list(network["target_id"]))
-    total_set = sources_set + target_set
+    total_set = sources_set.union(target_set)
     total_ids_list = list(total_set)
     total_type_list = []
     total_shortid_list = []

@@ -5,7 +5,7 @@ network (e.g. a transcriptional network, metabolic network, or a combination of 
 """
 
 import pandas as pd
-from Subnetwork_selector_for_visualisation import subnetwork_table_constructor_from_network_file_and_impact_dataframe
+# from Subnetwork_selector_for_visualisation import subnetwork_table_constructor_from_network_file_and_impact_dataframe
 
 class Node:
     """
@@ -834,7 +834,7 @@ def node_changed_and_omics_type_updater(path_inputfile_node_omics_info: str, net
             raise Exception(
                 "Wrong object type as key or value in dictionary. Please input a dictionary with {node_id:Node object}.")
 
-    # check names of three seven columns
+    # check names of three columns
     required_column_names = ["node_id", "changed", "changed_omics_type"]
     node_omics_table_column_names = list(node_omics_table.columns)
     for index in range(3):
@@ -871,15 +871,50 @@ def node_changed_and_omics_type_updater(path_inputfile_node_omics_info: str, net
                 identical_variant.changed_omics_type = changed_omics_type_list
 
 
-def node_changed_and_omics_type_maximum_background_updater(network_node_objects_dict: dict):
+def measured_omics_types_getter(path_inputfile_node_omics_info: str) -> list:
+    """
+    This method returs a list of all the omics layers that are mentioned in the node_omics_info inputfile.
+
+    :param path_inputfile_node_omics_info: path to the tsv file that contains the multi-omics info about nodes in the network.
+        Format of tsv file:
+            column 0: node_id (string)
+            column 1: changed (bool)
+            column 2: changed_omics_type (string) (seperated by '$')
+    :return: a list of all the omics layers that were measured.
+        Note: current implemented omics types: "metabolomics", "proteomics", "transcriptomics", "methylation", "ubiquitination", "glycosylation","phosphorylation", "dephosphorylation"
+    """
+    try:  # read in table with multi-omics information about the compounds and genes in the network contained in the dictionary
+        node_omics_table = pd.read_csv(path_inputfile_node_omics_info, sep="\t")
+    except:
+        raise Exception("No file was found. Please check your path to the file.")
+    # check names of three columns
+    required_column_names = ["node_id", "changed", "changed_omics_type"]
+    node_omics_table_column_names = list(node_omics_table.columns)
+    for index in range(3):
+        if node_omics_table_column_names[index] != required_column_names[index]:
+            raise Exception("Please check the format of the input network tsv files. The first three columns should be named: node_id,changed,changed_omics_type.")
+
+    #make list of measured omics layers
+    set_measured_omics_layers = set()
+
+    for index, row in node_omics_table.iterrows():
+        changed_omics_type_string = row['changed_omics_type']
+        changed_omics_type_set = set(changed_omics_type_string.split('$'))
+        set_measured_omics_layers = set_measured_omics_layers.union(changed_omics_type_set)
+
+    list_measured_omics_layers = list(set_measured_omics_layers)
+    return list_measured_omics_layers
+
+def node_changed_and_omics_type_maximum_background_updater(network_node_objects_dict: dict, measured_omics_layers:list):
     """
     This method sets the changed and changed_omics_types attributes of all the nodes in the network to true and all possible omics layers that can influence the impact score, respectively.
         Note: This method is used to calculate the maximum impact score for each node.
     :param network_node_objects_dict: the dictionary of all Node objects in the network. Format: {node_id:node_object}.
+    :param measured_omics_layers: a list of all the measured omics layers. Possible omics layers:"metabolomics", "proteomics", "transcriptomics", "methylation", "ubiquitination", "glycosylation","phosphorylation", "dephosphorylation".
     """
     for node in network_node_objects_dict.values():
         node.changed = True
-        node.changed_omics_type = ["metabolomics","proteomics","transcriptomics","methylation","ubiquitination","glycosylation","phosphorylation","dephosphorylation"]
+        node.changed_omics_type = measured_omics_layers
 
 
 def impact_calculator(network_node_objects_dict: dict, interaction_specific: bool) -> pd.DataFrame:
@@ -1305,7 +1340,8 @@ def general_node_impact_assessor(
     print('MAXIMUM BACKGROUND --------------------------------------------------------------------------')
     #MAXIMUM BACKGROUND IMPACT ANALYSIS
     # change the omics data to the omics background for the calculation of the maximal node impact values
-    node_changed_and_omics_type_maximum_background_updater(network_node_objects_dict)
+    list_measured_omics_layers = measured_omics_types_getter(path_inputfile_node_omics_info)
+    node_changed_and_omics_type_maximum_background_updater(network_node_objects_dict,list_measured_omics_layers)
     # perform the impact analysis to calculate the maximum impact score for all nodes of interest
 
     total_maximum_impact_analysis_table = pd.DataFrame(
@@ -1356,8 +1392,8 @@ def general_node_impact_assessor(
     total_extended_impact_analysis_table.to_csv(path_output_directory_and_filename, sep="\t", index=False)
 
     #GENERATE SUBNETWORKS FOR VISUALIZING RESULTS OF IMPACT ANALYSIS
-    if include_subnetwork_for_visualisation:
-        subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,total_extended_impact_analysis_table,"total_impact_score",start_weight_value,distance_level_limit,True,True,path_output_directory_and_filename+"_subnetwork")
+    #if include_subnetwork_for_visualisation:
+    #    subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,total_extended_impact_analysis_table,"total_impact_score",start_weight_value,distance_level_limit,True,True,path_output_directory_and_filename+"_subnetwork")
 
 
 

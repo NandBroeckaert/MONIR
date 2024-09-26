@@ -52,6 +52,54 @@ def subparser_network_merger(subparsers):
     This method creates the subparser for the network_merger method.
     :param subparsers: object to which the subparser should be added.
     """
+    parser_network_merger = subparsers.add_parser(
+        'network_merger',
+        help="This method is used to merge two networks (tsv files)."
+             "Note: It is assumed that the same ids in the two networks are the same type of node."
+             "Note: Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. It can also NOT BE USED as input for the impact analysis.")
+
+    parser_network_merger.add_argument(
+        "-n",
+        "--path_inputfile_network1",
+        required=True,
+        type=str,
+        help="The path to a tsv file containing the first network."
+    )
+    
+    parser_network_merger.add_argument(
+        "-m",
+        "--path_inputfile_network2",
+        required=True,
+        type=str,
+        help="The path to a tsv file containing the second network."
+    )
+    
+    parser_network_merger.add_argument(
+        "-d",
+        "--reverse_interaction_doubler",
+        type=bool,
+        action='store_true',
+        help='If this option is specified, reversible reaction edges will be contained in the network table in two directions (A to B, B to A). False by default.'
+    )
+
+    parser_network_merger.add_argument(
+        "-p",
+        "--prioritized_network",
+        type=int,
+        choices=[1,2],
+        default=1,
+        help="An integer that determines which identifiers will be used in the merged network for edges/rows that are present in both input networks. Two options: 1 or 2. 1 by default."
+    )
+
+    parser_network_merger.add_argument(
+        "-o",
+        "--path_output_directory_and_filename",
+        required=True,
+        type=str,
+        help="The path to the output tsv file that will be created that contains the merged network."
+    )
+
+
 
 def subparser_node_impact_assessor(subparsers):
     """
