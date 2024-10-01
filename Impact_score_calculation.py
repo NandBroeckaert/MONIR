@@ -936,7 +936,7 @@ def impact_calculator(network_node_objects_dict: dict, interaction_specific: boo
             - have ubiquitination info about a changing node that is a target of a PPrel type interaction with ubiquitination interaction info.
             - have glycosylation info about a changing node that is a target of a PPrel type interaction with glycosylation interaction info.
             - have phosphorylation info about a changing node that is a target of a PPrel type interaction with phosphorylation or dephosphorylation interaction info.
-        - the layer that we have info about for a certain gene node should be abble to affect a downstream node. In other words:
+        - the layer that we have info about for a certain gene node should be able to affect a downstream node. In other words:
             - have transcriptomics or proteomics info about a changing node that is a source of a GErel type interaction.
             - have transcriptomics or proteomics info about a changing node that is a source of a PPrel type interaction with methylation interaction info.
             - have transcriptomics or proteomics info about a changing node that is a source of a PPrel type interaction with ubiquitination interaction info.
@@ -1042,11 +1042,11 @@ def impact_calculator(network_node_objects_dict: dict, interaction_specific: boo
                             # "dissociation"
                             # "binding/association"
                             # "state change"
-                            # "indirect effect"
+                            # ""
                             # "inhibition"
                             # "activation"
-                            # "repression"
-                            # "expression"
+                            # ""
+                            # ""
 
                 else:
                     if "metabolomics" in node.changed_omics_type:
