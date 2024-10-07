@@ -180,7 +180,7 @@ def network_table_reader(path_inputfile_network: str, reverse_interaction_double
         next_nodes = unique_list_of_list_constructor(next_nodes)
 
         # make network object
-        network_node_objects_dict[node_id] = Node(node_id, node_type, previous_nodes, next_nodes, 0, 0, False, "")
+        network_node_objects_dict[node_id] = Node(node_id, node_type, previous_nodes, next_nodes, 0, 0, False, "",False)
 
     return network_node_objects_dict
 
@@ -983,9 +983,11 @@ def impact_calculator(network_node_objects_dict: dict, interaction_specific: boo
                 if (node.type == "gene" or node.type == "group_gene"):
                     changed_omics_type = node.changed_omics_type
 
-                    for i in len(node.previous_nodes):
-                        interaction_type = node.previous_node[i][1]
-                        interaction_info = node.previous_node[i][2]
+                    for i in range(len(node.previous_nodes)):
+                        interaction_type = node.previous_nodes[i][1]
+                        interaction_info = str(node.previous_nodes[i][2])
+                        print(interaction_type)
+                        print(interaction_info)
 
                         if (interaction_type == "GErel") and (("proteomics" in changed_omics_type) or ("transcriptomics" in changed_omics_type)):
                             add_node = True
@@ -1015,9 +1017,11 @@ def impact_calculator(network_node_objects_dict: dict, interaction_specific: boo
                             # "activation"
 
 
-                    for i in len(node.next_nodes):
+                    for i in range(len(node.next_nodes)):
                         interaction_type = node.next_nodes[i][1]
-                        interaction_info = node.next_nodes[i][2]
+                        interaction_info = str(node.next_nodes[i][2])
+                        print(interaction_type)
+                        print(interaction_info)
 
                         if (interaction_type == "GErel") and (("proteomics" in changed_omics_type) or ("transcriptomics" in changed_omics_type)):
                             add_node = True
@@ -1081,7 +1085,8 @@ def impact_calculator(network_node_objects_dict: dict, interaction_specific: boo
     separator = "$"
     contributing_nodes = separator.join(contributing_nodes)
     contributing_nodes_sub_scores = separator.join(contributing_nodes_sub_scores)
-    contributing_nodes_level = separator.join(contributing_nodes_level)
+    contributing_nodes_level_str = [str(level) for level in contributing_nodes_level]
+    contributing_nodes_level = separator.join(contributing_nodes_level_str)
     node_types = separator.join(node_types)
     node_types_sub_scores = [str(x) for x in node_types_sub_scores]
     node_types_sub_scores = separator.join(node_types_sub_scores)
@@ -1233,8 +1238,7 @@ def general_node_impact_assessor(
         distance_modification: bool,
         distance_modification_step_penalty: float,
         path_output_directory_and_filename: str,
-        distance_level_limit=int(100000000),
-        include_subnetwork_for_visualisation=True):
+        distance_level_limit=int(100000000)):
     """
     This method is used to perform an impact analysis for a given network (tsv file), list of nodes (tsv file) and multi-omics information (tsv file).
     Additionally, subnetworks for visualsation of high scoring nodes of interest can automatically be made.
@@ -1284,21 +1288,7 @@ def general_node_impact_assessor(
         Note: The subscores in column 9 correspond to the node types in column 8.
     :param distance_level_limit: the weight distribution process will be halted when at this node level. (so nodes with this level can have assigned weights, but nodes with this level +1 can't).
         Note: by default set to 100000000.
-    :param include_subnetwork_for_visualisation: boolean that determines whether subnetworks that are useful for visualization will be generated for all NOIs hat have an total impact score above the start_weight_value.
-        Note: default == True
-        Note: the subnetwork_table_constructor_from_network_file_and_impact_dataframe method from the Subnetwork_selector_for_visualistation module was used.
-            Parameters:
-                path_inputfile_network: path_inputfile_network
-                reverse_interaction_doubled: reverse_interaction_doubled
-                directionality_reaction: directionality_reaction
-                directionality_other: directionality_other
-                results_impact_analysis_pd: total_extended_impact_analysis_table
-                impact_value_type: "total_impact_score"
-                impact_threshold: start_weight_value
-                distance_level_limit: distance_level_limit
-                distance_level_limit_based_on_impact_results: True
-                incl_neighbours: True
-                output_directory_and_filename: path_output_directory_and_filename+"_subnetwork"
+
     """
 
     # read in a list of nodes of interest
@@ -1377,8 +1367,11 @@ def general_node_impact_assessor(
             standard_total_impact_score = float(standard_total_impact_score)
             maximum_total_impact_score = float(maximum_total_impact_score)
 
-            topological_independent_impact_score = standard_total_impact_score/maximum_total_impact_score
-            topological_independent_impact_score_list.append(str(topological_independent_impact_score))
+            if (maximum_total_impact_score == 0):
+                topological_independent_impact_score_list.append('')
+            else:
+                topological_independent_impact_score = standard_total_impact_score/maximum_total_impact_score
+                topological_independent_impact_score_list.append(str(topological_independent_impact_score))
         else:
             topological_independent_impact_score_list.append('')
 
@@ -1397,3 +1390,21 @@ def general_node_impact_assessor(
 
 
 
+
+"""
+    :param include_subnetwork_for_visualisation: boolean that determines whether subnetworks that are useful for visualization will be generated for all NOIs hat have an total impact score above the start_weight_value.
+        Note: default == True
+        Note: the subnetwork_table_constructor_from_network_file_and_impact_dataframe method from the Subnetwork_selector_for_visualistation module was used.
+            Parameters:
+                path_inputfile_network: path_inputfile_network
+                reverse_interaction_doubled: reverse_interaction_doubled
+                directionality_reaction: directionality_reaction
+                directionality_other: directionality_other
+                results_impact_analysis_pd: total_extended_impact_analysis_table
+                impact_value_type: "total_impact_score"
+                impact_threshold: start_weight_value
+                distance_level_limit: distance_level_limit
+                distance_level_limit_based_on_impact_results: True
+                incl_neighbours: True
+                output_directory_and_filename: path_output_directory_and_filename+"_subnetwork
+"""
