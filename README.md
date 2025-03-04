@@ -103,7 +103,7 @@ More information, concerning method options, can be found in the help pages of e
           - format: compound identifiers should be represented as 'cpd:*compound*' (E.g. cpd:C00121).
             Gene and group_gene identifiers should be represented as '*gene*' or '*gene*_*reaction*' (e.g. PA5546).
           - additional information: if you list an identifier, but there is not a node with that identifier in the network, this method will also look for matches with longer                   identifiers in the network. If such a longer match is found, the provided omics information will be connected to the node with the longer identifier. Importantly, the part before the underscore in the identifier must match with the user-provided identifier.
-      - *Column 1:* changed
+      - *Column 1:*
           -  header: changed
           -  definition: indicates whether an omics change was registered for this gene/compoun
           -  supported values: True, False
