@@ -132,8 +132,8 @@ def subnetwork_node_list_constructor(network_node_objects_dict: dict,distance_le
     :param distance_level_limit:
     :return: A list of node ids (str).
     """
-    if distance_level_limit <= 0:
-        raise Exception("The distance_level_limit should be a positive integer.")
+    if distance_level_limit < 0:
+        raise Exception("The distance_level_limit should be zero or a positive integer.")
 
     node_id_list = []
     for node_id in network_node_objects_dict:
@@ -160,16 +160,17 @@ def single_subnetwork_table_constructor(full_network_pd:pd.DataFrame,node_id_lis
     :return: A pandas dataframe containing the subnetwork table.
     """
     #CREATE SUBNETWORK TABLE
+    print(node_id_list)
     if incl_neighbours:
-        subnetwork_pd = full_network_pd[full_network_pd['source_id'].isin(node_id_list) or full_network_pd['target_id'].isin(node_id_list)]
+        subnetwork_pd = full_network_pd[(full_network_pd['source_id'].isin(node_id_list))|(full_network_pd['target_id'].isin(node_id_list))]
     else:
-        subnetwork_pd = full_network_pd[full_network_pd['source_id'].isin(node_id_list) and full_network_pd['target_id'].isin(node_id_list)]
+        subnetwork_pd = full_network_pd[(full_network_pd['source_id'].isin(node_id_list))&(full_network_pd['target_id'].isin(node_id_list))]
     return subnetwork_pd
 
 
-def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network:str,reverse_interaction_doubled:bool,directionality_reaction:str,directionality_other:str,results_impact_analysis_pd:pd.DataFrame,impact_value_type:str,impact_threshold:float,distance_level_limit:int,distance_level_limit_based_on_impact_results:bool,incl_neighbours:bool,output_directory_and_filename: str):
+def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network:str,reverse_interaction_doubled:bool,directionality_reaction:str,directionality_other:str,results_impact_analysis_pd:pd.DataFrame,total_impact_score_threshold:float,topological_independent_score_threshold:float,distance_level_limit:int,distance_level_limit_based_on_impact_results:bool,incl_neighbours:bool,output_directory_and_filename: str):
     """
-    This method makes a file, containing a subnetwork, for each node of interest (NOI) that exceeds the specified impact threshold.
+    This method makes a file, containing a subnetwork, for each node of interest (NOI) that exceeds the specified impact thresholds.
     :param path_inputfile_network: path to the input network file.
         Format table in the input network file:
             Column 0: "source_id"
@@ -196,8 +197,8 @@ def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inp
             Column 9: "top_impacting_node_type"
             Column 10: "node_types"
             Column 11: "node_types_sub_scores"
-    :param impact_value_type: Determines which type of impact value will be used for the impact threshold. Two options are available: "total_impact_score" and "topological_independent_total_impact_score".
-    :param impact_threshold: Only subnetworks will be made for nodes of interest with an impact value above this threshold (float).
+    :param total_impact_score_threshold: Only subnetworks will be made for nodes of interest with a total_impact_score above this threshold (float).
+    :param topological_independent_score_threshold: Only subnetworks will be made for nodes of interest with a topological_independent_total_impact_score above this threshold (float).
     :param distance_level_limit: Only nodes with a level under this threshold will be included in the subnetwork table. The minimal value is one. In practice, the distance_level_limit is the number of reactions (metabolite -> gene -> metabolite) or gene interactions (gene -> gene) that will be contained in the subnetwork, starting from the direct neighbours of the NOI.
     :param distance_level_limit_based_on_impact_results:If set to True, the given distance_level_limit will be disregarded and the 'contributing_nodes_max_level + 1' will be used instead.
     :param incl_neighbours: If set to true, the direct neighbours of nodes in the node_id list will be included in the subnetwork table.
@@ -211,12 +212,12 @@ def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inp
         NOI_network_id = row['NOI_network_id']
         total_impact_score = row['total_impact_score']
         topological_independent_total_impact_score = row['topological_independent_total_impact_score']
-        contributing_nodes_max_level = row['contributing_nodes_max_level']
 
-        if distance_level_limit_based_on_impact_results:
-            distance_level_limit = contributing_nodes_max_level
+        if total_impact_score>total_impact_score_threshold and topological_independent_total_impact_score>topological_independent_score_threshold:
+            contributing_nodes_max_level = int(row['contributing_nodes_max_level'])
+            if distance_level_limit_based_on_impact_results:
+                distance_level_limit = contributing_nodes_max_level
 
-        if ((impact_value_type == 'total_impact_score') and (total_impact_score>=impact_threshold)) or ((impact_value_type == 'topological_independent_total_impact_score') and (topological_independent_total_impact_score>=impact_threshold)):
             NOI = network_node_dict[NOI_network_id]
 
             #reset inclusion and level attributes of the node objects
@@ -224,7 +225,7 @@ def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inp
             node_inclusion_in_subnetwork_resetter(network_node_dict)
 
             #initiate the requested neighbouring nodes
-            subnetwork_inclusion_initiator(NOI,network_node_dict,directionality_reaction,directionality_other,distance_level_limit)
+            subnetwork_inclusion_initiator(NOI,network_node_dict,directionality_reaction,directionality_other)
 
             #determine requested neighbours of starting node
             neighbouring_nodes = direct_neighbours_id_interactiontype_interactioninfo_list_of_lists_constructor(NOI,directionality_reaction,directionality_other)
@@ -236,13 +237,13 @@ def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inp
                 subnetwork_inclusion_elongator(start_node,NOI,network_node_dict,directionality_reaction,directionality_other,distance_level_limit)
 
             #make list of nodes that should be included in the subnetwork
-            subnetwork_node_id_list = subnetwork_node_list_constructor(network_node_dict)
+            subnetwork_node_id_list = subnetwork_node_list_constructor(network_node_dict,distance_level_limit)
 
             #make subnetwork pandas dataframe
             subnetwork_pd = single_subnetwork_table_constructor(network_pd,subnetwork_node_id_list,incl_neighbours)
 
             #write to output directory
-            subnetwork_pd.to_csv(output_directory_and_filename+"_"+NOI_network_id, sep="\t", index=False)
+            subnetwork_pd.to_csv(output_directory_and_filename+"_"+NOI_network_id+".tsv", sep="\t", index=False)
 
 
 def subnetwork_table_constructor(path_inputfile_network:str,reverse_interaction_doubled:bool,directionality_reaction:str,directionality_other:str,path_inputfile_results_impact_analysis:str,impact_value_type:str,impact_threshold:float,distance_level_limit:int,distance_level_limit_based_on_impact_results:bool,incl_neighbours:bool,output_directory_and_filename: str):
@@ -342,7 +343,7 @@ def cytoscape_node_table_nodeshortid_nodetype_extension_constructor(path_inputfi
 
 def cytoscape_node_table_general_extension_constructor(path_inputfile_network:str,reverse_interaction_doubled:bool,path_inputfile_node_annotations:str,column_index_ids_annotation_inputfile:int,output_directory_and_filename: str):
     """
-    This method will add a column containing network node ids to your annotation table. This table can then be used to extend the node table in cytoscape with the info in the annotation file.
+    This method will add a column containing network node ids to your annotation table.
     :param path_inputfile_network: The path to the input network file.
     :param reverse_interaction_doubled: If set to true, reversible reaction edges are contained in the network table in two directions (A to B, B to A).
     :param path_inputfile_node_annotations: The path to the input node annotations file.

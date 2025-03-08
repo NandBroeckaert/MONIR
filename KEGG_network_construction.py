@@ -40,16 +40,16 @@ def KEGG_organism_all_metabolic_pathway_retriever(KEGG_organism_code:str) -> str
     :return: a string containing all the metabolic pathway identifiers of the specified organism separated by the delimiter '$'
     """
     #all hypothetically possible metabolic pathways
-    Carbohydrate_metabolism_pathway_numbers = ['00010','00020','00030','00040','00051','00052','00053','00500','00520','00620','00630','00640','00650','00660','00562']
+    Carbohydrate_metabolism_pathway_numbers = ['00010','00020','00030','00040','00051','00052','00053','00500','00520','00541','00620','00630','00640','00650','00660','00562']
     Energy_metabolism_pathway_numbers = ['00190','00195','00196','00710','00720','00680','00910','00920']
-    Lipid_metabolism_pathway_numbers = ['00061','00062','00071','00073','00100','00120','00121','00140','00561','00564','00565','00600','00590','00591','00592','01040']
+    Lipid_metabolism_pathway_numbers = ['00061','00062','00071','00073','00074','00100','00120','00121','00140','00561','00564','00565','00600','00590','00591','00592','01040']
     Nucleotide_metabolism_pathway_numbers = ['00230','00240']
     Amino_acid_metabolism_pathway_numbers = ['00250','00260','00270','00280','00290','00300','00310','00220','00330','00340','00350','00360','00380','00400']
     Metabolism_of_other_amino_acids_pathway_numbers = ['00410','00430','00440','00450','00460','00470','00480']
-    Glycan_biosynthesis_and_metabolism_pathway_numbers = ['00510','00513','00512','00515','00514','00532','00534','00533','00531','00563','00601','00603','00604','00511','00540','00542','00541','00550','00552','00571','00572','00543']
+    Glycan_biosynthesis_and_metabolism_pathway_numbers = ['00510','00513','00512','00515','00514','00532','00534','00533','00531','00563','00601','00603','00604','00511','00540','00542','00550','00552','00571','00572','00543']
     Metabolism_of_cofactors_and_vitamins_pathway_numbers = ['00730','00740','00750','00760','00770','00780','00785','00790','00670','00830','00860','00130']
     Metabolism_of_terpenoids_and_polyketides_pathway_numbers = ['00900','00902','00909','00904','00906','00905','00981','00908','00903','00907','01052','00522','01051','01059','01056','01057','00253','00523','01054','01053','01055']
-    Biosynthesis_of_other_secondary_metabolites_pathway_numbers = ['00940','00945','00941','00944','00942','00943','00946','00901','00403','00950','00960','00996','00232','00965','00966','00402','0311','00332','00261','00331','00521','00524','00525','00401','00404','00333','00254','00998','00999','00997']
+    Biosynthesis_of_other_secondary_metabolites_pathway_numbers = ['00940','00945','00941','00944','00942','00943','00946','00901','00403','00950','00960','00996','00232','00965','00966','00402','0311','00332','00261','00331','00521','00524','00525','00401','00404','00405','00333','00254','00998','00999','00997']
     Xenobiotics_biodegradation_and_metabolism_pathway_numbers = ['00362','00627','00364','00625','00361','00623','00622','00633','00642','00643','00791','00930','00363','00621','00626','00624','00365','00984','00980','00982','00983']
 
     all_possible_metabolic_pathway_numbers = Carbohydrate_metabolism_pathway_numbers+Energy_metabolism_pathway_numbers+Lipid_metabolism_pathway_numbers+Nucleotide_metabolism_pathway_numbers+Amino_acid_metabolism_pathway_numbers+Metabolism_of_other_amino_acids_pathway_numbers+Glycan_biosynthesis_and_metabolism_pathway_numbers+Metabolism_of_cofactors_and_vitamins_pathway_numbers+Metabolism_of_terpenoids_and_polyketides_pathway_numbers+Biosynthesis_of_other_secondary_metabolites_pathway_numbers+Xenobiotics_biodegradation_and_metabolism_pathway_numbers

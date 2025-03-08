@@ -7,13 +7,13 @@ def subparser_KEGG_network_constructor(subparsers):
     """
     parser_KEGG_network_constructor = subparsers.add_parser(
         'KEGG_network_constructor',
-        help = "This method will create tsv file containing network information of the selected KEGG pathways.")
+        help = "This method will create a tsv file containing network information of the selected KEGG pathways.")
     parser_KEGG_network_constructor.add_argument(
         "-p",
         "--pathways",
         required=True,
         type=str,
-        help='A string containing the KEGG pathway ids of a specific organism in the KEGG database separated by the dollar sign, which will be included in the network. '
+        help='A string containing the KEGG pathway ids of a specific organism in the KEGG database (e.g. pae00010) separated by the dollar sign, which will be included in the network. '
              'If you want to include all KEGG metabolic reactions, write all_metabolic_reactions.'
     )
     parser_KEGG_network_constructor.add_argument(
@@ -30,7 +30,11 @@ def subparser_KEGG_network_constructor(subparsers):
         type=str,
         help= 'A string of all the interaction types that need to be included in the network table separated by the dollar sign. '
               'This network may contain the following types of interactions: chemical, reaction, ECrel, PPrel, GErel, PCrel. '
-              'The following types cannot be selected together: (chemical & reaction),(reaction & ECrel).'
+              'PPrel, GErel, PCrel stand for protein-protein, gene expression and protein-compound interactions, respectively.'
+              'Chemical, reaction and ECrel are three ways for representing metabolic reactions/pathways.'
+              'Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. It can also NOT BE USED as input for the impact analysis.'
+              'For more information, please go to the github page. '
+
     )
     parser_KEGG_network_constructor.add_argument(
         "-o",
@@ -55,7 +59,7 @@ def subparser_network_merger(subparsers):
     parser_network_merger = subparsers.add_parser(
         'network_merger',
         help="This method is used to merge two networks (tsv files)."
-             "Note: It is assumed that the same ids in the two networks are the same type of node."
+             "Note: It is assumed that the same ids in the two networks are the same type of node (gene/compound)."
              "Note: Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. It can also NOT BE USED as input for the impact analysis.")
 
     parser_network_merger.add_argument(
@@ -63,7 +67,7 @@ def subparser_network_merger(subparsers):
         "--path_inputfile_network1",
         required=True,
         type=str,
-        help="The path to a tsv file containing the first network."
+        help="The path to a tsv file containing the first network (includes file name)."
     )
     
     parser_network_merger.add_argument(
@@ -71,7 +75,7 @@ def subparser_network_merger(subparsers):
         "--path_inputfile_network2",
         required=True,
         type=str,
-        help="The path to a tsv file containing the second network."
+        help="The path to a tsv file containing the second network (includes file name)."
     )
     
     parser_network_merger.add_argument(
@@ -96,7 +100,7 @@ def subparser_network_merger(subparsers):
         "--path_output_directory_and_filename",
         required=True,
         type=str,
-        help="The path to the output tsv file that will be created that contains the merged network."
+        help="The path to the output tsv file that will be created that contains the merged network (includes file name)."
     )
 
 
@@ -108,8 +112,8 @@ def subparser_node_impact_assessor(subparsers):
     """
     parser_node_impact_assessor = subparsers.add_parser(
         'node_impact_assessor',
-        help="This method is used to perform an impact analysis for a given network (tsv file), list of nodes (tsv file) and multi-omics information (tsv file)."
-             "Additionally, subnetworks for visualsation of high scoring nodes of interest can automatically be made.")
+        help="This method calculates impact scores for all user-specified genes-of-interest based on the provided omics information and network.")
+
     parser_node_impact_assessor.add_argument(
         "-n",
         "--path_inputfile_network",
@@ -144,9 +148,8 @@ def subparser_node_impact_assessor(subparsers):
         type=str,
         choices=["unidirectional","bidirectional"],
         default="bidirectional",
-        help="A string that determines which nodes that are connected (directly and indirectly) to the node of interest (NOI) with reaction type interactions will be taken into account for the impact analysis."
-             "If unidirectional is selected, only downstream nodes of the speciefied interaction type will possibly contribute to the impact of a NOI. The default setting is bidirectional."
-
+        help="This setting determines the direction of network propagation/diffusion for reaction type interactions (starting from the node-of-interest (NOI))."
+             "If unidirectional is selected, propagation will only go downstream (source to target). Hence, only downstream nodes of the specified interaction type will possibly contribute to the impact of a NOI. The default setting is bidirectional."
     )
     parser_node_impact_assessor.add_argument(
         "-c",
@@ -154,8 +157,8 @@ def subparser_node_impact_assessor(subparsers):
         type=str,
         choices=["unidirectional","bidirectional"],
         default="unidirectional",
-        help="A string that determines which nodes that are connected (directly and indirectly) to the node of interest (NOI) with non-reaction type interactions will be taken into account for the impact analysis."
-             "If unidirectional is selected, only downstream nodes of the speciefied interaction type will possibly contribute to the impact of a NOI. The default setting is unidirectional."
+        help="This setting determines the direction of network propagation/diffusion for non-reaction type interactions (starting from the node-of-interest (NOI))."
+             "If unidirectional is selected, propagation will only go downstream (source to target). Hence, only downstream nodes of the specified interaction type will possibly contribute to the impact of a NOI. The default setting is unidirectional."
     )
     parser_node_impact_assessor.add_argument(
         "-i",
@@ -163,8 +166,10 @@ def subparser_node_impact_assessor(subparsers):
         type=bool,
         action='store_true',
         help="If specified, the type of available omics data will be taken into account when calculating the impact score of the node of interest."
+             "For more information, please consult the github page."
              "False by default."
     )
+
     parser_node_impact_assessor.add_argument(
         "-s",
         "--start_weight_value",
@@ -223,16 +228,8 @@ def subparser_node_impact_assessor(subparsers):
         "--path_output_directory_and_filename",
         required=True,
         type=str,
-        help="The path to the output tsv file that will be created that contains the results of the impact analysis."
+        help="The path to the output tsv file that will be created that contains the results of the impact analysis (includes the filename)."
     )
-    parser_node_impact_assessor.add_argument(
-        "-j",
-        "--include_subnetwork_for_visualisation",
-        type=bool,
-        action='store_false',
-        help="If this option is specified, subnetworks that are useful for visualization will not be generated. By defualt subnetworks for all NOIs hat have an total impact score above the start_weight_value."
-    )
-
 
 def subparser_subnetwork_table_constructor(subparsers):
     """
@@ -241,20 +238,20 @@ def subparser_subnetwork_table_constructor(subparsers):
     """
     parser_subnetwork_table_constructor = subparsers.add_parser(
         'subnetwork_constructor',
-        help="This method makes a tsv file, containing a subnetwork, for each node of interest (NOI) in an impact analysis that exceeds the specified impact threshold.")
+        help="This method makes a tsv file, containing a subnetwork, for each node of interest (NOI) in an impact analysis that exceeds the specified impact thresholds.")
     parser_subnetwork_table_constructor.add_argument(
         "-n",
         "--path_inputfile_network",
         required=True,
         type=str,
-        help="The path to a tsv file containing all the network information."
+        help="The path to a tsv file containing all the network information (includes the filename)."
     )
     parser_subnetwork_table_constructor.add_argument(
         "-i",
         "--path_inputfile_results_impact_analysis",
         required=True,
         type=str,
-        help="The path to the tsv file that contains the results of the impact analysis."
+        help="The path to the tsv file that contains the results of the impact analysis (includes the filename)."
     )
     parser_subnetwork_table_constructor.add_argument(
         "-r",
@@ -285,19 +282,17 @@ def subparser_subnetwork_table_constructor(subparsers):
     )
     parser_subnetwork_table_constructor.add_argument(
         "-t",
-        "--threshold_impact_value_type",
-        type=str,
-        choices=["total_impact_score","topological_independent_total_impact_score"],
-        default="total_impact_score",
-        help="Determines which type of impact value will be used for the impact threshold. Two options are available: total_impact_score and topological_independent_total_impact_score."
-             "'total_impact_score' by default."
+        "--total_impact_score_threshold",
+        type=float,
+        required=True,
+        help="Only subnetworks will be made for nodes of interest with a total_impact_score above this threshold (float)."
     )
     parser_subnetwork_table_constructor.add_argument(
         "-b",
-        "--impact_threshold_value",
+        "--topological_independent_score_threshold",
         type=float,
         required=True,
-        help="Only subnetworks will be made for nodes of interest with an impact value above this threshold (float)"
+        help="Only subnetworks will be made for nodes of interest with a topological_independent_total_impact_score above this threshold (float)."
     )
     parser_subnetwork_table_constructor.add_argument(
         "-l",
@@ -336,7 +331,7 @@ def subparser_cytoscape_node_table_nodeshortid_nodetype_extension_constructor(su
     """
     parser_node_table_id_and_type_extender = subparsers.add_parser(
         'node_table_id_and_type_extender',
-        help="This method makes a tsv file, containing a subnetwork, for each node of interest (NOI) in an impact analysis that exceeds the specified impact threshold.")
+        help="This method makes a table containing column that lists all the (network) node ids and column that contains the short node ids (part before '_') and a column that contains all the node types (gene or compound). It can be used to extend the node table in cytoscape (this enables colouring based on type")
     parser_node_table_id_and_type_extender.add_argument(
         "-n",
         "--path_inputfile_network",
@@ -358,14 +353,13 @@ def subparser_cytoscape_node_table_general_extension_constructor(subparsers):
     """
     parser_annotation_table_id_extender = subparsers.add_parser(
         'annotation_table_id_extender',
-        help="This method makes a tsv file, containing a subnetwork, for each node of interest (NOI) in an impact analysis that exceeds the specified impact threshold."
-             "This table can then be used to extend the node table in cytoscape with the info in the annotation file.")
+        help="This method will add a column containing network node ids to your annotation table.")
     parser_annotation_table_id_extender.add_argument(
         "-n",
         "--path_inputfile_network",
         required=True,
         type=str,
-        help="The path to a tsv file containing all the network information."
+        help="The path to a tsv file containing all the network information (includes the name of the file)."
     )
     parser_annotation_table_id_extender.add_argument(
         "-r",
