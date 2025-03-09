@@ -160,7 +160,6 @@ def single_subnetwork_table_constructor(full_network_pd:pd.DataFrame,node_id_lis
     :return: A pandas dataframe containing the subnetwork table.
     """
     #CREATE SUBNETWORK TABLE
-    print(node_id_list)
     if incl_neighbours:
         subnetwork_pd = full_network_pd[(full_network_pd['source_id'].isin(node_id_list))|(full_network_pd['target_id'].isin(node_id_list))]
     else:
@@ -209,6 +208,7 @@ def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inp
 
     #create subnetwork for each node of interest that scored above the impact threshold
     for index, row in results_impact_analysis_pd.iterrows():
+        NOI_id = row['NOI_id']
         NOI_network_id = row['NOI_network_id']
         total_impact_score = row['total_impact_score']
         topological_independent_total_impact_score = row['topological_independent_total_impact_score']
@@ -243,10 +243,10 @@ def subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inp
             subnetwork_pd = single_subnetwork_table_constructor(network_pd,subnetwork_node_id_list,incl_neighbours)
 
             #write to output directory
-            subnetwork_pd.to_csv(output_directory_and_filename+"_"+NOI_network_id+".tsv", sep="\t", index=False)
+            subnetwork_pd.to_csv(output_directory_and_filename+"_"+NOI_id+".tsv", sep="\t", index=False)
 
 
-def subnetwork_table_constructor(path_inputfile_network:str,reverse_interaction_doubled:bool,directionality_reaction:str,directionality_other:str,path_inputfile_results_impact_analysis:str,impact_value_type:str,impact_threshold:float,distance_level_limit:int,distance_level_limit_based_on_impact_results:bool,incl_neighbours:bool,output_directory_and_filename: str):
+def subnetwork_table_constructor(path_inputfile_network:str,reverse_interaction_doubled:bool,directionality_reaction:str,directionality_other:str,path_inputfile_results_impact_analysis:str,total_impact_score_threshold:float,topological_independent_score_threshold:float,distance_level_limit:int,distance_level_limit_based_on_impact_results:bool,incl_neighbours:bool,output_directory_and_filename: str):
     """
     This method makes a file, containing a subnetwork, for each node of interest (NOI) that exceeds the specified impact threshold.
     :param path_inputfile_network: path to the input network file.
@@ -279,8 +279,8 @@ def subnetwork_table_constructor(path_inputfile_network:str,reverse_interaction_
             Column 9: "top_impacting_node_type"
             Column 10: "node_types"
             Column 11: "node_types_sub_scores"
-    :param impact_value_type: Determines which type of impact value will be used for the impact threshold. Two options are available: "total_impact_score" and "topological_independent_total_impact_score".
-    :param impact_threshold: Only subnetworks will be made for nodes of interest with an impact value above this threshold (float).
+    :param total_impact_score_threshold: Only subnetworks will be made for nodes of interest with a total_impact_score above this threshold (float).
+    :param topological_independent_score_threshold: Only subnetworks will be made for nodes of interest with a topological_independent_total_impact_score above this threshold (float).
     :param distance_level_limit: Only nodes with a level under this threshold will be included in the subnetwork table. The minimal value is one. In practice, the distance_level_limit is the number of reactions (metabolite -> gene -> metabolite) or gene interactions (gene -> gene) that will be contained in the subnetwork, starting from the direct neighbours of the NOI.
     :param distance_level_limit_based_on_impact_results:If set to True, the given distance_level_limit will be disregarded and the 'contributing_nodes_max_level + 1' will be used instead.
     :param incl_neighbours: If set to true, the direct neighbours of nodes in the node_id list will be included in the subnetwork table.
@@ -289,7 +289,7 @@ def subnetwork_table_constructor(path_inputfile_network:str,reverse_interaction_
     results_impact_analysis_pd = pd.read_csv(path_inputfile_results_impact_analysis,sep="\t")
 
     #create subnetwork for each node of interest that scored above the impact threshold
-    subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,results_impact_analysis_pd,impact_value_type,impact_threshold,distance_level_limit,distance_level_limit_based_on_impact_results,incl_neighbours,output_directory_and_filename)
+    subnetwork_table_constructor_from_network_file_and_impact_dataframe(path_inputfile_network,reverse_interaction_doubled,directionality_reaction,directionality_other,results_impact_analysis_pd,total_impact_score_threshold,topological_independent_score_threshold,distance_level_limit,distance_level_limit_based_on_impact_results,incl_neighbours,output_directory_and_filename)
 
 
 def cytoscape_node_table_nodeshortid_nodetype_extension_constructor(path_inputfile_network:str,output_directory_and_filename: str):

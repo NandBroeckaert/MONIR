@@ -36,13 +36,13 @@ for pathway_combination in selected_pathways_combinations:
 #MONIR paper -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #visualsatie volledig netwerk
 network = "C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_NETWORK_merged_pae_KEGG_RegulomePA_30012025.tsv"
-cytoscape_node_table_nodeshortid_nodetype_extension_constructor(network,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/network_node_table_extension.tsv")
+#cytoscape_node_table_nodeshortid_nodetype_extension_constructor(network,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/network_node_table_extension.tsv")
 
 #annotation_table = "C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_annotation_table.tsv"
 #cytoscape_node_table_general_extension_constructor(network,False,annotation_table,0,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_annotation_table_extended.tsv")
 
 #analyse
-
+"""
 OMICS_T05 = "C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_OMICS_T05.tsv"
 OMICS_T10 = "C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_OMICS_T10.tsv"
 OMICS_T15 = "C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_OMICS_T15.tsv"
@@ -63,9 +63,15 @@ for i in range(len(timepoints)):
     print(NOI)
 
     general_node_impact_assessor(network,False,OMICS,NOI,'bidirectional','unidirectional',True,10.0,True,True,1.5,True,1.0,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_IMPACT_ANALYSIS_LUZ19transcription_"+timepoint+'_05032025.tsv',10000)
-
+"""
 #visualisate subnetwerken
+subnetwork_table_constructor(network,False,"bidirectional","unidirectional","C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_IMPACT_ANALYSIS_LUZ19transcription_T05_05032025.tsv",15.0,0.11,1,False,True,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/High_scoring_subnetworks/MONIR_1step_09032025_subnetwork.tsv")
+subnetwork_table_constructor(network,False,"bidirectional","unidirectional","C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_IMPACT_ANALYSIS_LUZ19transcription_T10_05032025.tsv",15.0,0.11,1,False,True,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/High_scoring_subnetworks/MONIR_1step_09032025_subnetwork.tsv")
+subnetwork_table_constructor(network,False,"bidirectional","unidirectional","C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_IMPACT_ANALYSIS_LUZ19transcription_T15_05032025.tsv",15.0,0.11,1,False,True,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/High_scoring_subnetworks/MONIR_1step_09032025_subnetwork.tsv")
 
+subnetwork_table_constructor(network,False,"bidirectional","unidirectional","C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_IMPACT_ANALYSIS_LUZ19transcription_T05_05032025.tsv",15.0,0.11,2,False,True,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/High_scoring_subnetworks/MONIR_2step_09032025_subnetwork.tsv")
+subnetwork_table_constructor(network,False,"bidirectional","unidirectional","C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_IMPACT_ANALYSIS_LUZ19transcription_T10_05032025.tsv",15.0,0.11,2,False,True,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/High_scoring_subnetworks/MONIR_2step_09032025_subnetwork.tsv")
+subnetwork_table_constructor(network,False,"bidirectional","unidirectional","C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/MONIR_IMPACT_ANALYSIS_LUZ19transcription_T15_05032025.tsv",15.0,0.11,2,False,True,"C:/Nand_phd/data_en_analyse/MONIR_testcase_05032025/High_scoring_subnetworks/MONIR_2step_09032025_subnetwork.tsv")
 
 """
 #gp13 paper -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
