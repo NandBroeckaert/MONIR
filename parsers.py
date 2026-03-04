@@ -32,7 +32,7 @@ def subparser_KEGG_network_constructor(subparsers):
               'This network may contain the following types of interactions: chemical, reaction, ECrel, PPrel, GErel, PCrel. '
               'PPrel, GErel, PCrel stand for protein-protein, gene expression and protein-compound interactions, respectively.'
               'Chemical, reaction and ECrel are three ways for representing metabolic reactions/pathways.'
-              'Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. It can also NOT BE USED as input for the impact analysis.'
+              'Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. Notably, metabolic reactions should only be represented as reaction type interactions if you want to perform an the impact analysis.'
               'For more information, please go to the github page. '
 
     )
@@ -46,7 +46,6 @@ def subparser_KEGG_network_constructor(subparsers):
     parser_KEGG_network_constructor.add_argument(
         "-r",
         "--reverse_interactions",
-        type=bool,
         action='store_true',
         help='If this option is specified, reversible reaction edges will be contained in the network table in two directions (A to B, B to A). False by default.'
     )
@@ -60,7 +59,8 @@ def subparser_network_merger(subparsers):
         'network_merger',
         help="This method is used to merge two networks (tsv files)."
              "Note: It is assumed that the same ids in the two networks are the same type of node (gene/compound)."
-             "Note: Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. It can also NOT BE USED as input for the impact analysis.")
+             "Note: Making a network that contains a combination of reaction, chemical, ECrel type interactions is not advisable. It will lead to an unclear and inconsistent network. It can also NOT BE USED as input for the impact analysis."
+             'For more information, please go to the github page. ')
 
     parser_network_merger.add_argument(
         "-n",
@@ -81,9 +81,8 @@ def subparser_network_merger(subparsers):
     parser_network_merger.add_argument(
         "-d",
         "--reverse_interaction_doubler",
-        type=bool,
         action='store_true',
-        help='If this option is specified, reversible reaction edges will be contained in the network table in two directions (A to B, B to A). False by default.'
+        help='If this option is specified, reversible reaction edges will be stored in the network table in two directions (A to B, B to A). False by default.'
     )
 
     parser_network_merger.add_argument(
@@ -103,8 +102,6 @@ def subparser_network_merger(subparsers):
         help="The path to the output tsv file that will be created that contains the merged network (includes file name)."
     )
 
-
-
 def subparser_node_impact_assessor(subparsers):
     """
     This method creates the subparser for the general_node_impact_assessor method.
@@ -119,31 +116,34 @@ def subparser_node_impact_assessor(subparsers):
         "--path_inputfile_network",
         required=True,
         type=str,
-        help="The path to a tsv file containing all the network information."
+        help="The path to a tsv file containing all the network information." 
+             "For more information, please go to the github page."
     )
     parser_node_impact_assessor.add_argument(
         "-m",
         "--path_inputfile_node_omics_info",
         required=True,
         type=str,
-        help="The path to the tsv file that contains the multi-omics info about nodes in the network."
+        help="The path to the tsv file that contains the multi-omics info about nodes in the network." 
+             "For more information, please go to the github page."
     )
     parser_node_impact_assessor.add_argument(
-        "-t",
+        "-I",
         "--path_inputfile_nodes_of_interest",
         required=True,
         type=str,
-        help="The path to the tsv file that contains the list of identifiers for which you want to do the impact analysis (nodes of interest)."
+        help="The path to the tsv file that contains the list of identifiers for which you want to do the impact analysis (nodes of interest)." 
+             "For more information, please go to the github page."
     )
     parser_node_impact_assessor.add_argument(
         "-r",
         "--reverse_interactions",
-        type=bool,
         action='store_true',
+        default=False,
         help="If this option is specified, it is assumed that reversible reaction edges are contained in the provided network tsv file in two directions (A to B, B to A). False by default."
     )
     parser_node_impact_assessor.add_argument(
-        "-a",
+        "-R",
         "--directionality_reaction",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -152,7 +152,7 @@ def subparser_node_impact_assessor(subparsers):
              "If unidirectional is selected, propagation will only go downstream (source to target). Hence, only downstream nodes of the specified interaction type will possibly contribute to the impact of a NOI. The default setting is bidirectional."
     )
     parser_node_impact_assessor.add_argument(
-        "-c",
+        "-O",
         "--directionality_other",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -163,7 +163,6 @@ def subparser_node_impact_assessor(subparsers):
     parser_node_impact_assessor.add_argument(
         "-i",
         "--interaction_specific",
-        type=bool,
         action='store_true',
         help="If specified, the type of available omics data will be taken into account when calculating the impact score of the node of interest."
              "For more information, please consult the github page."
@@ -179,16 +178,14 @@ def subparser_node_impact_assessor(subparsers):
              "10 by default."
     )
     parser_node_impact_assessor.add_argument(
-        "-c",
+        "-C",
         "--centrality_modification",
-        type=bool,
         action='store_false',
         help="If specified, no centrality modifier will used for calculating impact scores."
     )
     parser_node_impact_assessor.add_argument(
         "-g",
         "--missingness_modification",
-        type=bool,
         action='store_false',
         help="If specified, no missingness modifier will used for calculating impact scores."
     )
@@ -203,7 +200,6 @@ def subparser_node_impact_assessor(subparsers):
     parser_node_impact_assessor.add_argument(
         "-d",
         "--distance_modification",
-        type=bool,
         action='store_false',
         help="If specified, no distance modifier will used for calculating impact scores."
     )
@@ -219,9 +215,9 @@ def subparser_node_impact_assessor(subparsers):
         "-l",
         "--distance_level_limit",
         type=int,
-        default=int(100000000),
+        default=int(10),
         help="The weight distribution process starts at zero and will be halted when at this node level. Only nodes till this level can contribute to the impact scores."
-             "100000000 by default."
+             "10 by default."
     )
     parser_node_impact_assessor.add_argument(
         "-o",
@@ -256,12 +252,11 @@ def subparser_subnetwork_table_constructor(subparsers):
     parser_subnetwork_table_constructor.add_argument(
         "-r",
         "--reverse_interactions",
-        type=bool,
         action='store_true',
         help="If this option is specified, it is assumed that reversible reaction edges are contained in the provided network tsv file in two directions (A to B, B to A). False by default."
     )
     parser_subnetwork_table_constructor.add_argument(
-        "-a",
+        "-R",
         "--directionality_reaction",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -271,7 +266,7 @@ def subparser_subnetwork_table_constructor(subparsers):
              "The default setting is bidirectional."
     )
     parser_subnetwork_table_constructor.add_argument(
-        "-c",
+        "-O",
         "--directionality_other",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -306,19 +301,17 @@ def subparser_subnetwork_table_constructor(subparsers):
     parser_subnetwork_table_constructor.add_argument(
         "-d",
         "--distance_level_limit_based_on_impact_results",
-        type=bool,
         action='store_false',
         help= "If this option is not specified, the given distance_level_limit will be disregarded and set to the 'contributing_nodes_max_level + 1'."
     )
     parser_subnetwork_table_constructor.add_argument(
         "-e",
         "--incl_neighbours",
-        type=bool,
         action='store_false',
         help="If this option is not specified, the direct neighbours of nodes in the node_id list will be included in the subnetwork table."
     )
     parser_subnetwork_table_constructor.add_argument(
-        'o',
+        '-o',
         '--output_directory_and_filename',
         type=str,
         help="The path to the output tsv file that will be created (includes the name of the file)."
@@ -340,7 +333,7 @@ def subparser_cytoscape_node_table_nodeshortid_nodetype_extension_constructor(su
         help="The path to a tsv file containing all the network information."
     )
     parser_node_table_id_and_type_extender.add_argument(
-        'o',
+        '-o',
         '--output_directory_and_filename',
         type=str,
         help="The path to the output tsv file that will be created (includes the name of the file)."
@@ -353,7 +346,7 @@ def subparser_cytoscape_node_table_general_extension_constructor(subparsers):
     """
     parser_annotation_table_id_extender = subparsers.add_parser(
         'annotation_table_id_extender',
-        help="This method will add a column containing network node ids to your annotation table.")
+        help="This method will add a column containing network node ids to your annotation table and write it to a new file.")
     parser_annotation_table_id_extender.add_argument(
         "-n",
         "--path_inputfile_network",
@@ -364,7 +357,6 @@ def subparser_cytoscape_node_table_general_extension_constructor(subparsers):
     parser_annotation_table_id_extender.add_argument(
         "-r",
         "--reverse_interactions",
-        type=bool,
         action='store_true',
         help="If this option is specified, it is assumed that reversible reaction edges are contained in the provided network tsv file in two directions (A to B, B to A). False by default."
     )
@@ -383,7 +375,7 @@ def subparser_cytoscape_node_table_general_extension_constructor(subparsers):
         help = "The index of the column containing short or same node ids that are in the network. (e.g. network_id = P06675_pathway1, annotation_id = P06675)"
     )
     parser_annotation_table_id_extender.add_argument(
-        'o',
+        '-o',
         '--output_directory_and_filename',
         type=str,
         help="The path to the output tsv file that will be created (includes the name of the file)."
