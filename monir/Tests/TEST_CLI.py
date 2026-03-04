@@ -12,7 +12,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from Parsers import get_parser
+from ..Parsers import get_parser
 
 def test_parser_basic():
     """Test that the parser is correctly initialized."""

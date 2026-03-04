@@ -1,12 +1,12 @@
 import sys
 import argparse
-from Parsers import get_parser
-from Network_construction import (
+from .Parsers import get_parser
+from .Network_construction import (
     KEGG_organism_all_metabolic_pathway_retriever,
     KEGG_network_constructor_from_string,
     network_merger)
-from Impact_analysis import general_node_impact_assessor
-from Subnetwork_visualisation import(
+from .Impact_analysis import general_node_impact_assessor
+from .Subnetwork_visualisation import(
     subnetwork_table_constructor,
     cytoscape_node_table_nodeshortid_nodetype_extension_constructor,
     cytoscape_node_table_general_extension_constructor)
@@ -97,7 +97,6 @@ def execute_requested_subcommand(args):
             path_inputfile_node_annotations=args.path_inputfile_node_annotations,
             column_index_ids_annotation_inputfile=args.column_index_ids_annotation_inputfile,
             output_directory_and_filename=args.output_directory_and_filename)
-
 
 def main():
     """

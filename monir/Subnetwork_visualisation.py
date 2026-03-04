@@ -1,5 +1,5 @@
 import pandas as pd
-from Impact_analysis import (
+from monir.Impact_analysis import (
     network_table_reader,
     Node,
     node_level_resetter,
