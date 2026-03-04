@@ -4,13 +4,14 @@
 1. [Introduction](#introduction)
 2. [System requirements](#system-requirements)
 3. [Installation](#installation)
-4. [Workflow](#workflow)
+4. [Basic installation verification tests](#basic-installation-verification-tests)
+5. [Workflow](#workflow)
     1. [Network construction](#network-construction)
     2. [Impact analysis](#impact-analysis)
     4. [Subnetwork visualisation](#subnetwork-visualisation)
-5. [Usage](#usage)
-6. [Citing MONIR](#citing-monir)
-7. [Contact](#contact)
+6. [Usage](#usage)
+7. [Citing MONIR](#citing-monir)
+8. [Contact](#contact)
 
 
 ## Introduction
@@ -19,7 +20,7 @@ MONIR is a versatile gene prioritisation tool that employs a network diffusion-l
 It ranks genes based on the number of and proximity to observed omics changes in a network. 
 To achieve this, it calculates an ‘impact score’ for each gene of interest using node weights after diffusion. 
 MONIR supports a wide range of omics types, including transcriptomics, proteomics, phosphorylation, glycosylation, ubiquitination, and metabolomics. 
-Notably, it simultaneously considers all available omics data, the network topology, and the specific types and directions of interactions between network nodes to calculate impact scores. 
+Notably, it simultaneously considers all available omics data, the network topology, and the specific types and directions of interactions between network nodes to calculate impact scores.
 
 
 ## System Requirements
@@ -194,7 +195,7 @@ A usage case is described in the supplementary information of the MONIR paper (s
 
 ## Citing MONIR
 - If you use MONIR in a publication, please cite:
-**insert paper**
+**coming soon**
 
 - Furthermore, please cite the databases used in the construction of your input network.
 In case you used our in-built methods to construct KEGG networks, also reference:
