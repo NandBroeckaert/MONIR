@@ -11,6 +11,11 @@ test_directory_input = os.path.dirname(os.path.abspath(__file__)) + "/Test_input
 test_directory_output = os.path.dirname(os.path.abspath(__file__)) + "/Test_output/"
 
 def main():
+    print("█" * 70)
+    print("  MONIR basic methods tests")
+    print("█" * 70)
+    print("\n")
+
     #NETWORK CONSTRUCTION -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     print()
     print("=" * 70)
