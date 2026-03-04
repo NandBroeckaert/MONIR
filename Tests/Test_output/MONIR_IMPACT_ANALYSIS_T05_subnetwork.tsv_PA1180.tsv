@@ -1,0 +1,20 @@
+source_id	source_type	target_id	target_type	interaction_type	interaction_id	interaction_info
+PA1180	gene	PA1179	gene	PPrel		activation$phosphorylation
+PA1179	gene	PA2101	gene	GErel		expression
+PA1179	gene	PA0190	gene	GErel		expression
+PA1180	gene	PA1179	gene	PPrel		activation
+PA1179	gene	PA3552	gene	GErel		expression
+PA1179	gene	PA3553	gene	GErel		expression
+PA1179	gene	PA3554	gene	GErel		expression
+PA1179	gene	PA3555	gene	GErel		expression
+PA1179	gene	PA3556	gene	GErel		expression
+PA1179	gene	PA3557	gene	GErel		expression
+PA1179	gene	PA3558	gene	GErel		expression
+PA3556	gene	PA3556_rn:R12207	gene	identical_id_connection		
+PA3556	gene	PA3556_rn:R09781	gene	identical_id_connection		
+PA3556	gene	PA3556_rn:R09773	gene	identical_id_connection		
+PA3555	gene	PA3555_rn:R07662	gene	identical_id_connection		
+PA3554	gene	PA3554_rn:R07658	gene	identical_id_connection		
+PA3554	gene	PA3554_rn:R07660	gene	identical_id_connection		
+PA3553	gene	PA3553_rn:R07661	gene	identical_id_connection		
+PA3552	gene	PA3552_rn:R07659	gene	identical_id_connection		

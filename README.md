@@ -24,7 +24,7 @@ Notably, it simultaneously considers all available omics data, the network topol
 
 ## System Requirements
 - **Operating Systems**: The tool can run on Linux, macOS, and Windows.
-- **Python Version**: MONIR requires Python 3.9 or higher.
+- **Python Version**: MONIR requires Python 3.11 or higher.
 
 ## Installation
 - MONIR is available on pip

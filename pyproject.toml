@@ -1,0 +1,19 @@
+[project]
+name = "monir"
+version = "1.0.0"
+description = "network-based multi-omics integration tool for gene priorization"
+authors = [
+    {name = "Nand Broeckaert"}
+]
+license = {text = "MIT license (see github)"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas (>=3.0.1,<4.0.0)",
+    "requests (>=2.32.5,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

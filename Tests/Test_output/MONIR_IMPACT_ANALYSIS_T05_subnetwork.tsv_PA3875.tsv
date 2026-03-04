@@ -1,0 +1,34 @@
+source_id	source_type	target_id	target_type	interaction_type	interaction_id	interaction_info
+cpd:C00088	compound	PA0519_rn:R00783 rn:R00785	gene	reaction	rn:R00783 rn:R00785	irreversible
+cpd:C00088	compound	PA1780_rn:R00787 rn:R00789	gene	reaction	rn:R00787 rn:R00789	irreversible
+cpd:C00088	compound	PA1781_rn:R00787 rn:R00789	gene	reaction	rn:R00787 rn:R00789	irreversible
+cpd:C00244	compound	PA3874_rn:R00798	gene	reaction	rn:R00798	irreversible
+cpd:C00244	compound	PA3875_rn:R00798	gene	reaction	rn:R00798	irreversible
+PA3874_rn:R00798	gene	cpd:C00088	compound	reaction	rn:R00798	irreversible
+PA3875_rn:R00798	gene	cpd:C00088	compound	reaction	rn:R00798	irreversible
+cpd:C00244	compound	PA1173_rn:R03071	gene	reaction	rn:R03071	irreversible
+cpd:C00244	compound	PA1174_rn:R03071	gene	reaction	rn:R03071	irreversible
+PA1173_rn:R03071	gene	cpd:C00088	compound	reaction	rn:R03071	irreversible
+PA1174_rn:R03071	gene	cpd:C00088	compound	reaction	rn:R03071	irreversible
+cpd:C00244	compound	PA3872_rn:R09497 rn:R00798	gene	reaction	rn:R09497 rn:R00798	irreversible
+cpd:C00244	compound	PA3874_rn:R09497 rn:R00798	gene	reaction	rn:R09497 rn:R00798	irreversible
+cpd:C00244	compound	PA3875_rn:R09497 rn:R00798	gene	reaction	rn:R09497 rn:R00798	irreversible
+PA3872_rn:R09497 rn:R00798	gene	cpd:C00088	compound	reaction	rn:R09497 rn:R00798	irreversible
+PA3874_rn:R09497 rn:R00798	gene	cpd:C00088	compound	reaction	rn:R09497 rn:R00798	irreversible
+PA3875_rn:R09497 rn:R00798	gene	cpd:C00088	compound	reaction	rn:R09497 rn:R00798	irreversible
+cpd:C00244	compound	PA3872_rn:R09497	gene	reaction	rn:R09497	irreversible
+cpd:C00244	compound	PA3874_rn:R09497	gene	reaction	rn:R09497	irreversible
+cpd:C00244	compound	PA3875_rn:R09497	gene	reaction	rn:R09497	irreversible
+PA3872_rn:R09497	gene	cpd:C00088	compound	reaction	rn:R09497	irreversible
+PA3874_rn:R09497	gene	cpd:C00088	compound	reaction	rn:R09497	irreversible
+PA3875_rn:R09497	gene	cpd:C00088	compound	reaction	rn:R09497	irreversible
+PA0519	gene	PA0519_rn:R00783 rn:R00785	gene	identical_id_connection		
+PA0519	gene	PA0519_rn:R00143	gene	identical_id_connection		
+PA3874	gene	PA3874_rn:R00798	gene	identical_id_connection		
+PA3874	gene	PA3874_rn:R09497	gene	identical_id_connection		
+PA3874	gene	PA3874_rn:R09497 rn:R00798	gene	identical_id_connection		
+PA3875	gene	PA3875_rn:R09497 rn:R00798	gene	identical_id_connection		
+PA3875	gene	PA3875_rn:R00798	gene	identical_id_connection		
+PA3875	gene	PA3875_rn:R09497	gene	identical_id_connection		
+PA3872	gene	PA3872_rn:R09497 rn:R00798	gene	identical_id_connection		
+PA3872	gene	PA3872_rn:R09497	gene	identical_id_connection		

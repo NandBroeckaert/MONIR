@@ -1,0 +1,18 @@
+source_id	source_type	target_id	target_type	interaction_type	interaction_id	interaction_info
+PA4494	gene	PA4493	gene	PPrel		activation$phosphorylation
+PA4493	gene	PA0518	gene	GErel		expression
+PA4493	gene	PA4431	gene	GErel		expression
+PA4493	gene	PA4430	gene	GErel		expression
+PA4493	gene	PA4429	gene	GErel		expression
+PA4493	gene	PA1554	gene	GErel		expression
+PA4493	gene	PA1557	gene	GErel		expression
+PA4493	gene	PA1856	gene	GErel		expression
+PA4493	gene	PA4133	gene	GErel		expression
+PA4493	gene	PA1553	gene	GErel		expression
+PA4493	gene	PA1556	gene	GErel		expression
+PA4493	gene	PA1552.1	gene	GErel		expression
+PA4493	gene	PA1555.1	gene	GErel		expression
+PA4493	gene	PA1552	gene	GErel		expression
+PA4493	gene	PA1555	gene	GErel		expression
+PA4493	gene	PA3930	gene	GErel		expression
+PA4493	gene	PA3929	gene	GErel		expression
