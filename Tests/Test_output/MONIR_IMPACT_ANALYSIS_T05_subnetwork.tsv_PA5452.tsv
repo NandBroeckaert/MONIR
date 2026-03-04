@@ -1,5 +1,4 @@
 source_id	source_type	target_id	target_type	interaction_type	interaction_id	interaction_info
-PA4732_rn:R13199	gene	cpd:C00085	compound	reaction	rn:R13199	reversible
 cpd:C00275	compound	PA2232_rn:R00772	gene	reaction	rn:R00772	reversible
 cpd:C00275	compound	PA3551_rn:R00772	gene	reaction	rn:R00772	reversible
 cpd:C00275	compound	PA5452_rn:R00772	gene	reaction	rn:R00772	reversible
@@ -14,28 +13,29 @@ cpd:C00636	compound	PA5452_rn:R00885	gene	reaction	rn:R00885	reversible
 PA2232_rn:R00885	gene	cpd:C00096	compound	reaction	rn:R00885	reversible
 PA3551_rn:R00885	gene	cpd:C00096	compound	reaction	rn:R00885	reversible
 PA5452_rn:R00885	gene	cpd:C00096	compound	reaction	rn:R00885	reversible
+PA4732_rn:R13199	gene	cpd:C00085	compound	reaction	rn:R13199	reversible
 PA4732_rn:R00771	gene	cpd:C00085	compound	reaction	rn:R00771	reversible
 cpd:C00085	compound	PA0548_rn:R01067	gene	reaction	rn:R01067	reversible
 PA2796_rn:R08575	gene	cpd:C00085	compound	reaction	rn:R08575	reversible
-PA5110_rn:R00762	gene	cpd:C00085	compound	reaction	rn:R00762	irreversible
 PA3759_rn:R00768	gene	cpd:C00085	compound	reaction	rn:R00768	irreversible
 PA5549_rn:R00768	gene	cpd:C00085	compound	reaction	rn:R00768	irreversible
 cpd:C00096	compound	PA3540_rn:R00880	gene	reaction	rn:R00880	irreversible
 PA2344_rn:R00760	gene	cpd:C00085	compound	reaction	rn:R00760	irreversible
 cpd:C00096	compound	PA5453_rn:R00888	gene	reaction	rn:R00888	irreversible
-PA4732	gene	PA4732_rn:R00771	gene	identical_id_connection		
-PA4732	gene	PA4732_rn:R13199	gene	identical_id_connection		
-PA4732	gene	PA4732_rn:R02739	gene	identical_id_connection		
-PA5322	gene	PA5322_rn:R08639	gene	identical_id_connection		
-PA5322	gene	PA5322_rn:R01057	gene	identical_id_connection		
-PA5322	gene	PA5322_rn:R00959	gene	identical_id_connection		
-PA5322	gene	PA5322_rn:R01818	gene	identical_id_connection		
-PA2232	gene	PA2232_rn:R00885	gene	identical_id_connection		
+PA5110_rn:R00762	gene	cpd:C00085	compound	reaction	rn:R00762	irreversible
 PA2232	gene	PA2232_rn:R00772	gene	identical_id_connection		
+PA2232	gene	PA2232_rn:R00885	gene	identical_id_connection		
 PA3551	gene	PA3551_rn:R00772	gene	identical_id_connection		
 PA3551	gene	PA3551_rn:R00885	gene	identical_id_connection		
-PA5452	gene	PA5452_rn:R00885	gene	identical_id_connection		
 PA5452	gene	PA5452_rn:R00772	gene	identical_id_connection		
-PA0548	gene	PA0548_rn:R01641	gene	identical_id_connection		
+PA5452	gene	PA5452_rn:R00885	gene	identical_id_connection		
+PA5322	gene	PA5322_rn:R01057	gene	identical_id_connection		
+PA5322	gene	PA5322_rn:R00959	gene	identical_id_connection		
+PA5322	gene	PA5322_rn:R08639	gene	identical_id_connection		
+PA5322	gene	PA5322_rn:R01818	gene	identical_id_connection		
+PA4732	gene	PA4732_rn:R02739	gene	identical_id_connection		
+PA4732	gene	PA4732_rn:R00771	gene	identical_id_connection		
+PA4732	gene	PA4732_rn:R13199	gene	identical_id_connection		
 PA0548	gene	PA0548_rn:R01067	gene	identical_id_connection		
+PA0548	gene	PA0548_rn:R01641	gene	identical_id_connection		
 PA3540	gene	PA3540_rn:R00880	gene	identical_id_connection		

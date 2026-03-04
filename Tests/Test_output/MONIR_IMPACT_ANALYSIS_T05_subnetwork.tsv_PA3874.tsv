@@ -22,13 +22,13 @@ cpd:C00244	compound	PA3875_rn:R09497	gene	reaction	rn:R09497	irreversible
 PA3872_rn:R09497	gene	cpd:C00088	compound	reaction	rn:R09497	irreversible
 PA3874_rn:R09497	gene	cpd:C00088	compound	reaction	rn:R09497	irreversible
 PA3875_rn:R09497	gene	cpd:C00088	compound	reaction	rn:R09497	irreversible
-PA0519	gene	PA0519_rn:R00783 rn:R00785	gene	identical_id_connection		
-PA0519	gene	PA0519_rn:R00143	gene	identical_id_connection		
-PA3874	gene	PA3874_rn:R00798	gene	identical_id_connection		
-PA3874	gene	PA3874_rn:R09497	gene	identical_id_connection		
-PA3874	gene	PA3874_rn:R09497 rn:R00798	gene	identical_id_connection		
 PA3875	gene	PA3875_rn:R09497 rn:R00798	gene	identical_id_connection		
 PA3875	gene	PA3875_rn:R00798	gene	identical_id_connection		
 PA3875	gene	PA3875_rn:R09497	gene	identical_id_connection		
+PA3874	gene	PA3874_rn:R09497 rn:R00798	gene	identical_id_connection		
+PA3874	gene	PA3874_rn:R00798	gene	identical_id_connection		
+PA3874	gene	PA3874_rn:R09497	gene	identical_id_connection		
 PA3872	gene	PA3872_rn:R09497 rn:R00798	gene	identical_id_connection		
 PA3872	gene	PA3872_rn:R09497	gene	identical_id_connection		
+PA0519	gene	PA0519_rn:R00783 rn:R00785	gene	identical_id_connection		
+PA0519	gene	PA0519_rn:R00143	gene	identical_id_connection		

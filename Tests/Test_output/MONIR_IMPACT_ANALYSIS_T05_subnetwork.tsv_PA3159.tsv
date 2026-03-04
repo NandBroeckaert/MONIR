@@ -1,11 +1,22 @@
 source_id	source_type	target_id	target_type	interaction_type	interaction_id	interaction_info
+PA4749_rn:R02060	gene	cpd:C06156	compound	reaction	rn:R02060	reversible
+PA3644	gene	cpd:C06026	compound	PCrel		
+cpd:C04501	compound	PA5552_rn:R00416	gene	reaction	rn:R00416	irreversible
+PA5552_rn:R00416	gene	cpd:C00043	compound	reaction	rn:R00416	irreversible
+cpd:C06156	compound	PA5552_rn:R05332	gene	reaction	rn:R05332	irreversible
+PA5552_rn:R05332	gene	cpd:C04501	compound	reaction	rn:R05332	irreversible
 cpd:C00043	compound	PA4450_rn:R00660	gene	reaction	rn:R00660	irreversible
 PA4450_rn:R00660	gene	cpd:C04631	compound	reaction	rn:R00660	irreversible
 cpd:C04631	compound	PA2977_rn:R03191 rn:R03192	gene	reaction	rn:R03191 rn:R03192	irreversible
-cpd:C04501	compound	PA5552_rn:R00416	gene	reaction	rn:R00416	irreversible
-PA5552_rn:R00416	gene	cpd:C00043	compound	reaction	rn:R00416	irreversible
-PA5552_rn:R05332	gene	cpd:C04501	compound	reaction	rn:R05332	irreversible
 PA0596_rn:R08968	gene	cpd:C04501	compound	reaction	rn:R08968	irreversible
+cpd:C00043	compound	PA3141_rn:R10266	gene	reaction	rn:R10266	irreversible
+PA3141_rn:R10266	gene	cpd:C04613	compound	reaction	rn:R10266	irreversible
+cpd:C20395	compound	PA3155_rn:R10141	gene	reaction	rn:R10141	irreversible
+cpd:C04573	compound	PA3158_rn:R10140	gene	reaction	rn:R10140	irreversible
+PA3158_rn:R10140	gene	cpd:C20395	compound	reaction	rn:R10140	irreversible
+cpd:C00043	compound	PA3159_rn:R00421	gene	reaction	rn:R00421	irreversible
+PA3159_rn:R00421	gene	cpd:C04573	compound	reaction	rn:R00421	irreversible
+cpd:C04613	compound	PA3146_rn:R12555	gene	reaction	rn:R12555	irreversible
 cpd:C00043	compound	PA3644_rn:R04567	gene	reaction	rn:R04567	irreversible
 PA3644_rn:R04567	gene	cpd:C04738	compound	reaction	rn:R04567	irreversible
 cpd:C04738	compound	PA4406_rn:R04587	gene	reaction	rn:R04587	irreversible
@@ -14,26 +25,17 @@ cpd:C06026	compound	PA3310_rn:R11555	gene	reaction	rn:R11555	irreversible
 cpd:C06026	compound	PA3556_rn:R09781	gene	reaction	rn:R09781	irreversible
 cpd:C06026	compound	PA0936_rn:R12210	gene	reaction	rn:R12210	irreversible
 cpd:C06026	compound	PA4512_rn:R12210	gene	reaction	rn:R12210	irreversible
-cpd:C20395	compound	PA3155_rn:R10141	gene	reaction	rn:R10141	irreversible
-cpd:C04573	compound	PA3158_rn:R10140	gene	reaction	rn:R10140	irreversible
-PA3158_rn:R10140	gene	cpd:C20395	compound	reaction	rn:R10140	irreversible
-cpd:C00043	compound	PA3159_rn:R00421	gene	reaction	rn:R00421	irreversible
-PA3159_rn:R00421	gene	cpd:C04573	compound	reaction	rn:R00421	irreversible
-cpd:C00043	compound	PA3141_rn:R10266	gene	reaction	rn:R10266	irreversible
-PA3141_rn:R10266	gene	cpd:C04613	compound	reaction	rn:R10266	irreversible
-cpd:C04613	compound	PA3146_rn:R12555	gene	reaction	rn:R12555	irreversible
-PA3644	gene	cpd:C06026	compound	PCrel		
-PA5552	gene	PA5552_rn:R00416	gene	identical_id_connection		
+PA3556	gene	PA3556_rn:R09773	gene	identical_id_connection		
+PA3556	gene	PA3556_rn:R09781	gene	identical_id_connection		
+PA3556	gene	PA3556_rn:R12207	gene	identical_id_connection		
+PA3644	gene	PA3644_rn:R04567	gene	identical_id_connection		
 PA5552	gene	PA5552_rn:R05332	gene	identical_id_connection		
+PA5552	gene	PA5552_rn:R00416	gene	identical_id_connection		
 PA0596	gene	PA0596_rn:R08968	gene	identical_id_connection		
 PA0596	gene	PA0596_rn:R11024	gene	identical_id_connection		
-PA3644	gene	PA3644_rn:R04567	gene	identical_id_connection		
-PA1972	gene	PA1972_rn:R11555	gene	identical_id_connection		
-PA1972	gene	PA1972_rn:R12202	gene	identical_id_connection		
 PA1972	gene	PA1972_rn:R11557	gene	identical_id_connection		
+PA1972	gene	PA1972_rn:R12202	gene	identical_id_connection		
+PA1972	gene	PA1972_rn:R11555	gene	identical_id_connection		
 PA3310	gene	PA3310_rn:R11555	gene	identical_id_connection		
 PA3310	gene	PA3310_rn:R12202	gene	identical_id_connection		
 PA3310	gene	PA3310_rn:R11557	gene	identical_id_connection		
-PA3556	gene	PA3556_rn:R12207	gene	identical_id_connection		
-PA3556	gene	PA3556_rn:R09781	gene	identical_id_connection		
-PA3556	gene	PA3556_rn:R09773	gene	identical_id_connection		

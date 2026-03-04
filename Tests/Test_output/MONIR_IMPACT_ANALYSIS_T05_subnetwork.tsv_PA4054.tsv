@@ -1,65 +1,65 @@
 source_id	source_type	target_id	target_type	interaction_type	interaction_id	interaction_info
-PA3807_rn:R00330	gene	cpd:C00044	compound	reaction	rn:R00330	reversible
 PA4457_rn:R01530	gene	cpd:C00199	compound	reaction	rn:R01530	reversible
+PA3807_rn:R00330	gene	cpd:C00044	compound	reaction	rn:R00330	reversible
 cpd:C00199	compound	PA0607_rn:R01529	gene	reaction	rn:R01529	reversible
 PA0330_rn:R01056	gene	cpd:C00199	compound	reaction	rn:R01056	reversible
-cpd:C00044	compound	PA1674_rn:R00428	gene	reaction	rn:R00428	irreversible
-cpd:C00044	compound	PA3438_rn:R00428	gene	reaction	rn:R00428	irreversible
-cpd:C00044	compound	PA5539_rn:R00428	gene	reaction	rn:R00428	irreversible
-cpd:C00044	compound	PA1505_rn:R09394	gene	reaction	rn:R09394	irreversible
-cpd:C00044	compound	PA3870_rn:R09394	gene	reaction	rn:R09394	irreversible
-cpd:C00044	compound	PA4047_rn:R00425	gene	reaction	rn:R00425	irreversible
-cpd:C00044	compound	PA4054_rn:R00425	gene	reaction	rn:R00425	irreversible
-PA4047_rn:R00425	gene	cpd:C01304	compound	reaction	rn:R00425	irreversible
-PA4054_rn:R00425	gene	cpd:C01304	compound	reaction	rn:R00425	irreversible
 cpd:C00199	compound	PA4054_rn:R07281	gene	reaction	rn:R07281	irreversible
 PA4054_rn:R07281	gene	cpd:C15556	compound	reaction	rn:R07281	irreversible
 cpd:C15556	compound	PA4053_rn:R04457	gene	reaction	rn:R04457	irreversible
 cpd:C01304	compound	PA4056_rn:R03459	gene	reaction	rn:R03459	irreversible
+cpd:C00044	compound	PA4047_rn:R00425	gene	reaction	rn:R00425	irreversible
+cpd:C00044	compound	PA4054_rn:R00425	gene	reaction	rn:R00425	irreversible
+PA4047_rn:R00425	gene	cpd:C01304	compound	reaction	rn:R00425	irreversible
+PA4054_rn:R00425	gene	cpd:C01304	compound	reaction	rn:R00425	irreversible
 cpd:C00044	compound	PA0934_rn:R00429	gene	reaction	rn:R00429	irreversible
 cpd:C00044	compound	PA5338_rn:R00429	gene	reaction	rn:R00429	irreversible
 cpd:C00044	compound	PA3217_rn:R00434	gene	reaction	rn:R00434	irreversible
 cpd:C00044	compound	PA5272_rn:R00434	gene	reaction	rn:R00434	irreversible
 cpd:C00044	compound	PA0935_rn:R00426	gene	reaction	rn:R00426	irreversible
 cpd:C00044	compound	PA1920_rn:R11633	gene	reaction	rn:R11633	irreversible
-PA3807	gene	PA3807_rn:R02331	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R02326	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R00331	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R00330	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R03530	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R02093	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R00139	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R01857	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R00156	gene	identical_id_connection		
+cpd:C00044	compound	PA1674_rn:R00428	gene	reaction	rn:R00428	irreversible
+cpd:C00044	compound	PA3438_rn:R00428	gene	reaction	rn:R00428	irreversible
+cpd:C00044	compound	PA5539_rn:R00428	gene	reaction	rn:R00428	irreversible
+cpd:C00044	compound	PA1505_rn:R09394	gene	reaction	rn:R09394	irreversible
+cpd:C00044	compound	PA3870_rn:R09394	gene	reaction	rn:R09394	irreversible
 PA3807	gene	PA3807_rn:R00570	gene	identical_id_connection		
 PA3807	gene	PA3807_rn:R12853	gene	identical_id_connection		
-PA3807	gene	PA3807_rn:R00722	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R02331	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R01857	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R02093	gene	identical_id_connection		
 PA3807	gene	PA3807_rn:R01137	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R02326	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R03530	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R00139	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R00331	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R00722	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R00330	gene	identical_id_connection		
+PA3807	gene	PA3807_rn:R00156	gene	identical_id_connection		
 PA5338	gene	PA5338_rn:R00429	gene	identical_id_connection		
 PA5338	gene	PA5338_rn:R00336	gene	identical_id_connection		
-PA0935	gene	PA0935_rn:R03004	gene	identical_id_connection		
 PA0935	gene	PA0935_rn:R03036	gene	identical_id_connection		
-PA0935	gene	PA0935_rn:R00087	gene	identical_id_connection		
 PA0935	gene	PA0935_rn:R00103	gene	identical_id_connection		
 PA0935	gene	PA0935_rn:R00426	gene	identical_id_connection		
-PA1674	gene	PA1674_rn:R04639	gene	identical_id_connection		
-PA1674	gene	PA1674_rn:R05048	gene	identical_id_connection		
-PA1674	gene	PA1674_rn:R00428	gene	identical_id_connection		
-PA1674	gene	PA1674_rn:R05046	gene	identical_id_connection		
-PA3438	gene	PA3438_rn:R00428	gene	identical_id_connection		
-PA3438	gene	PA3438_rn:R05046	gene	identical_id_connection		
-PA3438	gene	PA3438_rn:R05048	gene	identical_id_connection		
-PA3438	gene	PA3438_rn:R04639	gene	identical_id_connection		
-PA5539	gene	PA5539_rn:R05046	gene	identical_id_connection		
-PA5539	gene	PA5539_rn:R05048	gene	identical_id_connection		
-PA5539	gene	PA5539_rn:R00428	gene	identical_id_connection		
-PA5539	gene	PA5539_rn:R04639	gene	identical_id_connection		
+PA0935	gene	PA0935_rn:R03004	gene	identical_id_connection		
+PA0935	gene	PA0935_rn:R00087	gene	identical_id_connection		
+PA1920	gene	PA1920_rn:R11636	gene	identical_id_connection		
+PA1920	gene	PA1920_rn:R11634	gene	identical_id_connection		
+PA1920	gene	PA1920_rn:R11633	gene	identical_id_connection		
+PA1920	gene	PA1920_rn:R11635	gene	identical_id_connection		
 PA4054	gene	PA4054_rn:R07281	gene	identical_id_connection		
 PA4054	gene	PA4054_rn:R00425	gene	identical_id_connection		
 PA4056	gene	PA4056_rn:R03458	gene	identical_id_connection		
 PA4056	gene	PA4056_rn:R03459	gene	identical_id_connection		
 PA3217	gene	PA3217_rn:R00434	gene	identical_id_connection		
-PA1920	gene	PA1920_rn:R11636	gene	identical_id_connection		
-PA1920	gene	PA1920_rn:R11634	gene	identical_id_connection		
-PA1920	gene	PA1920_rn:R11635	gene	identical_id_connection		
-PA1920	gene	PA1920_rn:R11633	gene	identical_id_connection		
+PA1674	gene	PA1674_rn:R04639	gene	identical_id_connection		
+PA1674	gene	PA1674_rn:R05046	gene	identical_id_connection		
+PA1674	gene	PA1674_rn:R05048	gene	identical_id_connection		
+PA1674	gene	PA1674_rn:R00428	gene	identical_id_connection		
+PA3438	gene	PA3438_rn:R00428	gene	identical_id_connection		
+PA3438	gene	PA3438_rn:R04639	gene	identical_id_connection		
+PA3438	gene	PA3438_rn:R05048	gene	identical_id_connection		
+PA3438	gene	PA3438_rn:R05046	gene	identical_id_connection		
+PA5539	gene	PA5539_rn:R05048	gene	identical_id_connection		
+PA5539	gene	PA5539_rn:R00428	gene	identical_id_connection		
+PA5539	gene	PA5539_rn:R04639	gene	identical_id_connection		
+PA5539	gene	PA5539_rn:R05046	gene	identical_id_connection		

@@ -85,7 +85,7 @@ cpd:C00469	compound	PA2266_rn:R09479	gene	reaction	rn:R09479	irreversible
 PA2266_rn:R09479	gene	cpd:C00084	compound	reaction	rn:R09479	irreversible
 PA2119	gene	PA2119_rn:R00754	gene	identical_id_connection	NA	NA
 PA2119	gene	PA2119_rn:R00710	gene	identical_id_connection	NA	NA
-PA5015	gene	PA5015_rn:R00014	gene	identical_id_connection	NA	NA
 PA5015	gene	PA5015_rn:R03270	gene	identical_id_connection	NA	NA
+PA5015	gene	PA5015_rn:R00014	gene	identical_id_connection	NA	NA
 PA3193	gene	PA3193_rn:R01600	gene	identical_id_connection	NA	NA
 PA3193	gene	PA3193_rn:R01786	gene	identical_id_connection	NA	NA

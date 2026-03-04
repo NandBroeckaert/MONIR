@@ -130,7 +130,7 @@ def test_node_impact_assessor_args():
         'node_impact_assessor',
         '-n', '/tmp/network.tsv',
         '-m', '/tmp/omics.tsv',
-        '-I', '/tmp/noi.tsv',
+        '-t', '/tmp/noi.tsv',
         '-o', '/tmp/impact_results.tsv'
     ]
     
@@ -158,8 +158,8 @@ def test_subnetwork_constructor_args():
         'subnetwork_constructor',
         '-n', '/tmp/network.tsv',
         '-i', '/tmp/impact_results.tsv',
-        '-R', 'bidirectional',
-        '-O', 'unidirectional',
+        '-a', 'bidirectional',
+        '-c', 'unidirectional',
         '-t', '5.0',
         '-b', '0.5',
         '-o', '/tmp/subnetwork.tsv'

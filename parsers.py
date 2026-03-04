@@ -128,7 +128,7 @@ def subparser_node_impact_assessor(subparsers):
              "For more information, please go to the github page."
     )
     parser_node_impact_assessor.add_argument(
-        "-I",
+        "-t",
         "--path_inputfile_nodes_of_interest",
         required=True,
         type=str,
@@ -143,7 +143,7 @@ def subparser_node_impact_assessor(subparsers):
         help="If this option is specified, it is assumed that reversible reaction edges are contained in the provided network tsv file in two directions (A to B, B to A). False by default."
     )
     parser_node_impact_assessor.add_argument(
-        "-R",
+        "-a",
         "--directionality_reaction",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -152,7 +152,7 @@ def subparser_node_impact_assessor(subparsers):
              "If unidirectional is selected, propagation will only go downstream (source to target). Hence, only downstream nodes of the specified interaction type will possibly contribute to the impact of a NOI. The default setting is bidirectional."
     )
     parser_node_impact_assessor.add_argument(
-        "-O",
+        "-c",
         "--directionality_other",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -256,7 +256,7 @@ def subparser_subnetwork_table_constructor(subparsers):
         help="If this option is specified, it is assumed that reversible reaction edges are contained in the provided network tsv file in two directions (A to B, B to A). False by default."
     )
     parser_subnetwork_table_constructor.add_argument(
-        "-R",
+        "-a",
         "--directionality_reaction",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -266,7 +266,7 @@ def subparser_subnetwork_table_constructor(subparsers):
              "The default setting is bidirectional."
     )
     parser_subnetwork_table_constructor.add_argument(
-        "-O",
+        "-c",
         "--directionality_other",
         type=str,
         choices=["unidirectional","bidirectional"],
@@ -391,7 +391,7 @@ def get_parser():
         prog="MONIT",
         description="Program which helps (i) select genes that potentially drive the observed multi-omics changes and (ii) visualize the results."
     )
-    parser.add_argument("-v","--version", action="version", version="MONIT 1.0")
+    parser.add_argument("-v","--version", action="version", version="MONIR version 1.0.0")
 
     # create the subparsers
     subparsers = parser.add_subparsers(

@@ -13,6 +13,12 @@ dependencies = [
     "requests (>=2.32.5,<3.0.0)"
 ]
 
+[tool.poetry.scripts]
+monir = "MONIR:main"
+monir-test-cli = "Tests.TEST_CLI:main"
+monir-test-methods = "Tests.TEST_METHODS:main"
+
+
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -5,13 +5,13 @@ PA0141	No similar node_id in network
 PA0199	No similar node_id in network										
 PA0200	No similar node_id in network										
 PA0201	No similar node_id in network										
-PA0202	PA0202	0	160.09523809523807	0.0						0	
+PA0202	PA0202	0	160.0952380952381	0.0						0	
 PA0208	No similar node_id in network										
 PA0280	No similar node_id in network										
 PA0281	No similar node_id in network										
 PA0283	No similar node_id in network										
-PA0298	PA0298	5.833333333333334	221.93333333333337	0.02628416942024632	cpd:C00352$PA1341$PA1342	0.8333333333333335$2.5$2.5	gene	compound$gene$group_gene	0.8333333333333335$2.5$2.5	3	1$3$1
-PA0299	PA0299_rn:R08714	0	74.16666666666666	0.0						0	
+PA0298	PA0298	5.833333333333334	221.93333333333334	0.026284169420246323	cpd:C00352$PA1341$PA1342	0.8333333333333335$2.5$2.5	gene	compound$gene$group_gene	0.8333333333333335$2.5$2.5	3	1$3$1
+PA0299	PA0299_rn:R08714	0	74.16666666666667	0.0						0	
 PA0328	No similar node_id in network										
 PA0329	No similar node_id in network										
 PA0423	No similar node_id in network										
@@ -23,7 +23,7 @@ PA0495	No similar node_id in network
 PA0496	No similar node_id in network										
 PA0497	No similar node_id in network										
 PA0509	PA0509_rn:R12698	0	20.0	0.0						0	
-PA0510	PA0510_rn:R03194	0	83.91666666666667	0.0						0	
+PA0510	PA0510_rn:R03194	0	83.91666666666666	0.0						0	
 PA0511	No similar node_id in network										
 PA0512	PA0512_rn:R12000	0	29.8	0.0						0	
 PA0513	PA0513_rn:R12000	0	29.8	0.0						0	
@@ -45,11 +45,11 @@ PA0836.1	No similar node_id in network
 PA0840	No similar node_id in network										
 PA0856	No similar node_id in network										
 PA0870	PA0870	15.0	604.7277777777779	0.024804549338086002	cpd:C00957$PA1341$PA1342	10.0$2.5$2.5	compound	compound$gene$group_gene	10.0$2.5$2.5	3	0$3$1
-PA0887	PA0887	0	176.73412698412702	0.0						0	
+PA0887	PA0887	0	176.734126984127	0.0						0	
 PA0921	No similar node_id in network										
 PA0924	No similar node_id in network										
 PA0938	No similar node_id in network										
-PA0958	PA0958	0	34.166666666666664	0.0						0	
+PA0958	PA0958	0	34.16666666666667	0.0						0	
 PA0975	PA0975_rn:R10002	0	37.42857142857143	0.0						0	
 PA1053	No similar node_id in network										
 PA1054	No similar node_id in network										
@@ -61,8 +61,8 @@ PA1127	No similar node_id in network
 PA1136	No similar node_id in network										
 PA1137	No similar node_id in network										
 PA1178	No similar node_id in network										
-PA1179	PA1179	47.5	183.5952380952381	0.258721307223447	cpd:C16153$PA3555$PA3554$PA3553$PA3552	7.5$10.0$10.0$10.0$10.0	gene	compound$gene	7.5$40.0	1	1$0$0$0$0
-PA1180	PA1180	18.0	59.58333333333333	0.3020979020979021	PA1179$PA3555$PA3554$PA3553$PA3552	10.0$2.3333333333333335$1.0$2.3333333333333335$2.3333333333333335	gene	gene	18.0	1	0$1$1$1$1
+PA1179	PA1179	47.5	183.5952380952381	0.258721307223447	cpd:C16153$PA3552$PA3553$PA3554$PA3555	7.5$10.0$10.0$10.0$10.0	gene	compound$gene	7.5$40.0	1	1$0$0$0$0
+PA1180	PA1180	18.0	59.58333333333333	0.3020979020979021	PA1179$PA3552$PA3553$PA3554$PA3555	10.0$2.3333333333333335$2.3333333333333335$1.0$2.3333333333333335	gene	gene	18.0	1	0$1$1$1$1
 PA1196	No similar node_id in network										
 PA1317	No similar node_id in network										
 PA1341	PA1341	0	0							0	
@@ -77,7 +77,7 @@ PA1546	PA1546_rn:R06895	0	28.0	0.0						0
 PA1555	PA1555	0	0							0	
 PA1555.1	PA1555.1	0	0							0	
 PA1556	PA1556	0	0							0	
-PA1562	PA1562	0	66.33333333333333	0.0						0	
+PA1562	PA1562	0	66.33333333333334	0.0						0	
 PA1579	No similar node_id in network										
 PA1592	No similar node_id in network										
 PA1657	PA1657	0	0							0	
@@ -98,11 +98,11 @@ PA1789	No similar node_id in network
 PA1828	No similar node_id in network										
 PA1830	No similar node_id in network										
 PA1837	No similar node_id in network										
-PA1838	PA1838_rn:R00858	0	58.583333333333336	0.0						0	
+PA1838	PA1838_rn:R00858	0	58.58333333333333	0.0						0	
 PA1852	No similar node_id in network										
 PA1889	No similar node_id in network										
 PA1891	No similar node_id in network										
-PA1972	PA1972	0	76.33333333333334	0.0						0	
+PA1972	PA1972	0	76.33333333333333	0.0						0	
 PA2011	PA2011	0	153.44444444444446	0.0						0	
 PA2013	PA2013_rn:R02085	0	21.0	0.0						0	
 PA2015	No similar node_id in network										
@@ -134,21 +134,21 @@ PA2867	No similar node_id in network
 PA2910	No similar node_id in network										
 PA2976	No similar node_id in network										
 PA3013	PA3013	5.0	555.3849206349206	0.009002765135005752	cpd:C03273	5.0	compound	compound	5.0	2	2
-PA3014	PA3014	0	493.3333333333333	0.0						0	
+PA3014	PA3014	0	493.33333333333326	0.0						0	
 PA3017	No similar node_id in network										
 PA3018	No similar node_id in network										
 PA3031	No similar node_id in network										
 PA3038	No similar node_id in network										
-PA3068	PA3068_rn:R00243	5.0	237.0166666666667	0.02109556289993671	PA1341$PA1342	2.5$2.5	gene	gene$group_gene	2.5$2.5	3	3$1
+PA3068	PA3068_rn:R00243	5.0	237.01666666666668	0.021095562899936714	PA1341$PA1342	2.5$2.5	gene	gene$group_gene	2.5$2.5	3	3$1
 PA3133.4	No similar node_id in network										
-PA3159	PA3159_rn:R00421	18.25	125.08333333333333	0.14590273151232513	cpd:C01050$cpd:C19745$cpd:C19725$cpd:C04573	1.25$3.0$4.0$10.0	compound	compound	18.25	4	2$4$3$0
+PA3159	PA3159_rn:R00421	18.25	125.08333333333333	0.14590273151232513	cpd:C19745$cpd:C19725$cpd:C04573$cpd:C01050	3.0$4.0$10.0$1.25	compound	compound	18.25	4	4$3$0$2
 PA3187	PA3187	0	0							0	
 PA3234	No similar node_id in network										
 PA3271	No similar node_id in network										
 PA3278	No similar node_id in network										
 PA3305	No similar node_id in network										
 PA3305.1	No similar node_id in network										
-PA3310	PA3310	0	76.33333333333334	0.0						0	
+PA3310	PA3310	0	76.33333333333333	0.0						0	
 PA3326	No similar node_id in network										
 PA3337	PA3337_rn:R05176	11.5	45.66666666666667	0.25182481751824815	cpd:C07838$cpd:C07836	7.5$4.0	compound	compound	11.5	3	1$3
 PA3392	PA3392_rn:R02804	0	54.333333333333314	0.0						0	
@@ -158,7 +158,7 @@ PA3496	No similar node_id in network
 PA3552	PA3552	10.0	45.33333333333332	0.2205882352941177	cpd:C16153	10.0	compound	compound	10.0	0	0
 PA3553	PA3553	7.5	48.000000000000014	0.15624999999999994	cpd:C16153	7.5	compound	compound	7.5	1	1
 PA3554	PA3554	10.0	57.0	0.17543859649122806	cpd:C16153	10.0	compound	compound	10.0	0	0
-PA3555	PA3555	5.0	97.76190476190476	0.05114466634193863	cpd:C16153	5.0	compound	compound	5.0	2	2
+PA3555	PA3555	5.0	97.76190476190477	0.05114466634193862	cpd:C16153	5.0	compound	compound	5.0	2	2
 PA3572	No similar node_id in network										
 PA3584	PA3584_rn:R00848	2.5	133.9190476190476	0.018667994168474204	cpd:C01094	2.5	compound	compound	2.5	1	1
 PA3603	PA3603_rn:R02240	0	67.5952380952381	0.0						0	
@@ -169,19 +169,19 @@ PA3796	No similar node_id in network
 PA3819	No similar node_id in network										
 PA3839	No similar node_id in network										
 PA3871	No similar node_id in network										
-PA3872	PA3872	23.0	61.99999999999999	0.37096774193548393	PA3878$PA3879$PA3874$PA3875$PA3872$PA3873	7.5$6.5$1.1666666666666665$1.1666666666666665$1.1666666666666665$5.5	gene	gene	23.0	3	1$2$3$3$3$3
+PA3872	PA3872	23.0	61.99999999999999	0.37096774193548393	PA3878$PA3879$PA3875$PA3874$PA3872$PA3873	7.5$6.5$1.1666666666666665$1.1666666666666665$1.1666666666666665$5.5	gene	gene	23.0	3	1$2$3$3$3$3
 PA3873	PA3873	0	0							0	
-PA3874	PA3874	23.0	61.99999999999999	0.37096774193548393	PA3878$PA3879$PA3874$PA3875$PA3872$PA3873	7.5$6.5$1.1666666666666665$1.1666666666666665$1.1666666666666665$5.5	gene	gene	23.0	3	1$2$3$3$3$3
-PA3875	PA3875	23.0	61.99999999999999	0.37096774193548393	PA3878$PA3879$PA3874$PA3875$PA3872$PA3873	7.5$6.5$1.1666666666666665$1.1666666666666665$1.1666666666666665$5.5	gene	gene	23.0	3	1$2$3$3$3$3
-PA3878	PA3878	26.0	36.0	0.7222222222222222	PA3879$PA3874$PA3875$PA3872$PA3873	10.0$2.3333333333333335$2.3333333333333335$2.3333333333333335$9.0	gene	gene	26.0	1	0$1$1$1$1
-PA3879	PA3879	40.0	40.111111111111114	0.9972299168975068	PA3874$PA3875$PA3872$PA3873	10.0$10.0$10.0$10.0	gene	gene	40.0	0	0$0$0$0
+PA3874	PA3874	23.0	61.99999999999999	0.37096774193548393	PA3878$PA3879$PA3875$PA3874$PA3872$PA3873	7.5$6.5$1.1666666666666665$1.1666666666666665$1.1666666666666665$5.5	gene	gene	23.0	3	1$2$3$3$3$3
+PA3875	PA3875	23.0	61.99999999999999	0.37096774193548393	PA3878$PA3879$PA3875$PA3874$PA3872$PA3873	7.5$6.5$1.1666666666666665$1.1666666666666665$1.1666666666666665$5.5	gene	gene	23.0	3	1$2$3$3$3$3
+PA3878	PA3878	26.0	36.0	0.7222222222222222	PA3879$PA3875$PA3874$PA3872$PA3873	10.0$2.3333333333333335$2.3333333333333335$2.3333333333333335$9.0	gene	gene	26.0	1	0$1$1$1$1
+PA3879	PA3879	40.0	40.111111111111114	0.9972299168975068	PA3875$PA3874$PA3872$PA3873	10.0$10.0$10.0$10.0	gene	gene	40.0	0	0$0$0$0
 PA3880	No similar node_id in network										
 PA3885	No similar node_id in network										
 PA3902	No similar node_id in network										
 PA3912	PA3912	0	76.0	0.0						0	
 PA3913	PA3913	0	76.0	0.0						0	
 PA4010	No similar node_id in network										
-PA4054	PA4054	28.583333333333332	135.41666666666666	0.21107692307692308	cpd:C01112$cpd:C00199$cpd:C04121$cpd:C01187$cpd:C00231	9.0$10.0$1.75$5.5$2.3333333333333335	compound	compound	28.583333333333332	4	1$0$4$3$1
+PA4054	PA4054	28.583333333333332	135.41666666666666	0.21107692307692308	cpd:C01112$cpd:C00199$cpd:C01187$cpd:C04121$cpd:C00231	9.0$10.0$5.5$1.75$2.3333333333333335	compound	compound	28.583333333333332	4	1$0$3$4$1
 PA4055	PA4055_rn:R00066	0	72.0	0.0						0	
 PA4204	PA4204_rn:R02035	0.8333333333333335	39.0	0.02136752136752137	cpd:C00257	0.8333333333333335	compound	compound	0.8333333333333335	1	1
 PA4289	No similar node_id in network										
@@ -210,17 +210,17 @@ PA4735	No similar node_id in network
 PA4745	No similar node_id in network										
 PA4746	No similar node_id in network										
 PA4746.2	No similar node_id in network										
-PA4773	PA4773_rn:R00178	0	38.33333333333333	0.0						0	
+PA4773	PA4773_rn:R00178	0	38.333333333333336	0.0						0	
 PA4774	PA4774	0	130.5	0.0						0	
 PA4782	No similar node_id in network										
 PA4809	No similar node_id in network										
-PA4810	PA4810_rn:R00519	0	86.08333333333334	0.0						0	
-PA4811	PA4811_rn:R00519	0	86.08333333333334	0.0						0	
+PA4810	PA4810_rn:R00519	0	86.08333333333333	0.0						0	
+PA4811	PA4811_rn:R00519	0	86.08333333333333	0.0						0	
 PA4840	No similar node_id in network										
 PA4918	PA4918_rn:R01268	0	29.42857142857143	0.0						0	
 PA4936	No similar node_id in network										
 PA4972	No similar node_id in network										
-PA5015	PA5015	2.5	171.75396825396828	0.014555704449886787	cpd:C00957	2.5	compound	compound	2.5	1	1
+PA5015	PA5015	2.5	171.75396825396822	0.014555704449886792	cpd:C00957	2.5	compound	compound	2.5	1	1
 PA5024	No similar node_id in network										
 PA5027	No similar node_id in network										
 PA5030	No similar node_id in network										
@@ -233,7 +233,7 @@ PA5167	No similar node_id in network
 PA5168	No similar node_id in network										
 PA5169	No similar node_id in network										
 PA5170	No similar node_id in network										
-PA5171	PA5171_rn:R00552	0	88.66666666666666	0.0						0	
+PA5171	PA5171_rn:R00552	0	88.66666666666667	0.0						0	
 PA5172	PA5172_rn:R01398	0	72.11111111111111	0.0						0	
 PA5173	PA5173	0	68.33333333333334	0.0						0	
 PA5178	No similar node_id in network										
@@ -248,7 +248,7 @@ PA5304	PA5304_rn:R01374	0	30.61111111111111	0.0						0
 PA5374	No similar node_id in network										
 PA5427	PA5427	9.0	275.66666666666663	0.032648125755743655	PA2480$PA2479	5.0$4.0	gene	gene	9.0	3	2$3
 PA5428	No similar node_id in network										
-PA5429	PA5429_rn:R00490	2.5	92.52222222222223	0.027020535607061365	PA1342	2.5	group_gene	group_gene	2.5	1	1
+PA5429	PA5429_rn:R00490	2.5	92.5222222222222	0.027020535607061375	PA1342	2.5	group_gene	group_gene	2.5	1	1
 PA5440	No similar node_id in network										
 PA5445	PA5445_rn:R10343	0	172.5277777777778	0.0						0	
 PA5446	No similar node_id in network										
