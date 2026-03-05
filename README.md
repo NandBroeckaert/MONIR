@@ -33,7 +33,7 @@ Notably, it simultaneously considers all available omics data, the network topol
 
 ## Basic installation verification tests
 - command: 'monir-test-cli'
-- command: 'monir-monir-test-methods'
+- command: 'monir-test-methods'
 
 ## Workflow
 
