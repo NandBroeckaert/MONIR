@@ -391,7 +391,7 @@ def get_parser():
         prog="MONIT",
         description="Program which helps (i) select genes that potentially drive the observed multi-omics changes and (ii) visualize the results."
     )
-    parser.add_argument("-v","--version", action="version", version="MONIR version 1.0.1")
+    parser.add_argument("-v","--version", action="version", version="MONIR version 1.0.2")
 
     # create the subparsers
     subparsers = parser.add_subparsers(

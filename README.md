@@ -29,11 +29,19 @@ Notably, it simultaneously considers all available omics data, the network topol
 
 ## Installation
 - MONIR is available on pip
-- command: 'pip install monir'
+```bash
+pip install monir
+```
 
 ## Basic installation verification tests
-- command: 'monir-test-cli'
-- command: 'monir-test-methods'
+- 1) test subcommand parsers
+```bash
+monir-test-cli
+```
+- 2) test network construction, impact analysis and subnetwork visualisation methods with test data
+```bash
+monir-test-methods
+```
 
 ## Workflow
 

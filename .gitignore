@@ -1,0 +1,14 @@
+# Ignore IDE settings
+.idea/
+.vscode/
+
+# Ignore Python cache
+__pycache__/
+monir/__pycache__/
+monir/Tests/__pycache__/
+
+# Ignore build artifacts
+dist/
+
+# Ignore system files
+.DS_Store
